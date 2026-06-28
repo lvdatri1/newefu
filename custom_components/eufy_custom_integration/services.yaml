@@ -1,0 +1,76 @@
+set_mode:
+  name: Set Mode
+  description: Set the security mode for a device.
+  fields:
+    entity_id:
+      name: Entity
+      description: The entity to set the mode for.
+      required: true
+      selector:
+        entity:
+          integration: eufy_custom_integration
+          domain: select
+    mode:
+      name: Mode
+      description: The security mode to set.
+      required: true
+      selector:
+        select:
+          options:
+            - "home"
+            - "away"
+            - "schedule"
+            - "custom"
+            - "disarmed"
+
+start_stream:
+  name: Start Stream
+  description: Start the video stream for a camera.
+  fields:
+    entity_id:
+      name: Entity
+      description: The camera entity to start streaming.
+      required: true
+      selector:
+        entity:
+          integration: eufy_custom_integration
+          domain: camera
+
+stop_stream:
+  name: Stop Stream
+  description: Stop the video stream for a camera.
+  fields:
+    entity_id:
+      name: Entity
+      description: The camera entity to stop streaming.
+      required: true
+      selector:
+        entity:
+          integration: eufy_custom_integration
+          domain: camera
+
+trigger_alarm:
+  name: Trigger Alarm
+  description: Trigger the alarm for a device.
+  fields:
+    entity_id:
+      name: Entity
+      description: The alarm entity to trigger.
+      required: true
+      selector:
+        entity:
+          integration: eufy_custom_integration
+          domain: alarm_control_panel
+
+disarm_alarm:
+  name: Disarm Alarm
+  description: Disarm the alarm for a device.
+  fields:
+    entity_id:
+      name: Entity
+      description: The alarm entity to disarm.
+      required: true
+      selector:
+        entity:
+          integration: eufy_custom_integration
+          domain: alarm_control_panel

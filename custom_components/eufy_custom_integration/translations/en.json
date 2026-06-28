@@ -1,0 +1,19 @@
+{
+  "en": {
+    "config": {
+      "step": {
+        "user": {
+          "title": "Connect to Eufy Hub",
+          "description": "Enter your Eufy Hub connection details",
+          "data": {
+            "host": "Host",
+            "port": "Port",
+            "username": "Username",
+            "password": "Password",
+            "poll_interval": "Poll Interval (seconds)"
+          }
+        }
+      }
+    }
+  }
+}
