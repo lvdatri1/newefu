@@ -1,7 +1,7 @@
 # Eufy Custom Integration
 
 [![HACS Default](https://img.shields.io/badge/HACS-Default-41BDF5.svg)](https://hacs.xyz)
-[![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2024.1-%2341BDF5.svg)](https://homeassistant.io)
+[![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2025.1-%2341BDF5.svg)](https://homeassistant.io)
 [![Python](https://img.shields.io/badge/python-3.12-blue.svg)](https://python.org)
 
 Home Assistant custom integration for Eufy security devices — cameras, doorbells, ground bases (HomeBase), smart locks, and sensors.
@@ -62,7 +62,7 @@ Home Assistant custom integration for Eufy security devices — cameras, doorbel
 | `const.py` | All constants, config keys, events, services |
 | `coordinator.py` | Data polling + command methods (set_mode, trigger, disarm) |
 | `device_manager.py` | HA device registry management |
-| `config_flow.py` | UI setup wizard (host, port, credentials) |
+| `config_flow.py` | UI setup wizard (email, password, country code) |
 | `devices/base_device.py` | Base entity class with device_info + helpers |
 | `camera.py`, `sensor.py`, ... | Per-platform entity implementations |
 | `services.yaml` | Custom service definitions for HA |
@@ -83,13 +83,13 @@ Home Assistant custom integration for Eufy security devices — cameras, doorbel
 
 ### HACS (recommended)
 1. Add this repo as a custom repository in HACS
-2. Search for "Eufy Custom Integration" and install
+2. Search for "Eufy (lvdatri)" and install
 3. Restart Home Assistant
 
 ### Manual
 1. Copy `custom_components/lvdatri_eufy/` to your Home Assistant `custom_components/` directory
 2. Restart Home Assistant
-3. Add the integration via Settings → Devices & Services → Add Integration → "Eufy Custom Integration"
+3. Add the integration via Settings → Devices & Services → Add Integration → "Eufy (lvdatri)"
 4. Enter your Eufy email, password, and country code
 
 ## Platforms
@@ -146,7 +146,7 @@ pytest tests/ --cov=custom_components.lvdatri_eufy -v
 
 ### Integration Tests (Real Device)
 
-Runs against your actual Eufy hardware. **Set these environment variables:**
+Runs against your real Eufy cloud account. **Set these environment variables:**
 
 ```bash
 # Replace with your Eufy account credentials
@@ -184,9 +184,11 @@ tests/
 ├── test_config_flow.py             # Config flow wizard tests
 ├── test_coordinator.py             # Coordinator fetch + command tests
 ├── test_device_manager.py          # Device registry tests
+├── test_integration_ha.py          # Full HA lifecycle (setup → update → unload)
 ├── test_lock.py                    # EufyLock tests (lock/unlock/jam)
 ├── test_select.py                  # EufyModeSelect tests
 ├── test_sensor.py                  # Battery + WiFi signal sensor tests
+├── test_simulation.py              # End-to-end event-flow simulations
 └── test_switch.py                  # Motion detection switch tests
 ```
 
@@ -198,14 +200,14 @@ tests/
 
 - Python 3.12+
 - Home Assistant 2024.1+ (for runtime testing)
-- `eufy-security-client` library (for real hardware)
+- `pyeufysecurity` library (for cloud API access)
 
 ### Setup
 
 ```bash
 # Clone the repository
 git clone https://github.com/lvdatri1/newefu.git
-cd lvdatri_eufy
+cd newefu
 
 # (Optional) Create a virtual environment
 python3 -m venv .venv
