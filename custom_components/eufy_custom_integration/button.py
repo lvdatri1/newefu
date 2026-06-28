@@ -1,4 +1,22 @@
-"""Button platform for the Eufy Custom Integration."""
+"""
+Button platform for the Eufy Custom Integration.
+
+================================================================================
+ ROLE
+================================================================================
+
+ Provides pressable button entities for Eufy devices. Currently:
+   - **WakeUpButton**:  Wakes up a device from sleep/standby.
+
+================================================================================
+ DATA FLOW
+================================================================================
+
+ async_setup_entry()
+   -> creates EufyWakeUpButton per camera/doorbell/button device
+   -> async_add_entities() registers it with HA
+   -> async_press() -> sets device state to "waking"
+"""
 
 from __future__ import annotations
 
@@ -19,7 +37,16 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up Eufy button entities."""
+    """Set up Eufy button entities from a config entry.
+
+    Creates a wake-up button for cameras, doorbells, and generic
+    button-type devices.
+
+    Args:
+        hass: HomeAssistant instance.
+        entry: The ConfigEntry for this integration.
+        async_add_entities: HA callback to register new entities.
+    """
     coordinator: EufyDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id][
         "coordinator"
     ]
@@ -36,11 +63,19 @@ async def async_setup_entry(
 
 
 class EufyButton(EufyDeviceEntity, ButtonEntity):
-    """Base class for Eufy buttons."""
+    """Base class for all Eufy buttons.
+
+    Extends EufyDeviceEntity with ButtonEntity for HA button compatibility.
+    Subclasses must override async_press().
+    """
 
 
 class EufyWakeUpButton(EufyButton):
-    """Representation of a Eufy wake-up button."""
+    """Button to wake up a Eufy device from standby/sleep mode.
+
+    Pressing this button sends a wake command to the device,
+    updating its state to "waking".
+    """
 
     def __init__(
         self,
@@ -48,11 +83,21 @@ class EufyWakeUpButton(EufyButton):
         device_id: str,
         device_info: dict[str, Any],
     ) -> None:
-        """Initialize the wake-up button."""
+        """Initialise the wake-up button.
+
+        Args:
+            coordinator: The data coordinator.
+            device_id:   The Eufy device ID.
+            device_info: The device data dict.
+        """
         super().__init__(coordinator, device_id, device_info, "Wake Up")
 
     async def async_press(self) -> None:
-        """Wake up the device."""
+        """Press the wake-up button.
+
+        Sends a wake command to the device and updates the state
+        to "waking". The coordinator notifies HA of the change.
+        """
         data = self._get_device_data()
         if data:
             data["state"] = "waking"

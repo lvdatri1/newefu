@@ -1,4 +1,20 @@
-"""Tests for the Eufy Base Device Entity."""
+"""
+Tests for the Eufy Base Device Entity (devices/base_device.py).
+
+================================================================================
+ COVERAGE
+================================================================================
+
+ - Base device entity initialisation (name, unique_id, device_info)
+ - Base device entity with entity_type suffix in name/unique_id
+ - Entity availability when coordinator has data
+ - Entity unavailability when coordinator data is None
+ - Entity unavailability when device_id is missing from data
+ - _get_device_data() returns device data dict
+ - _get_device_data() returns None when device_id is unknown
+ - _get_property() reads from properties dict
+ - _get_property() returns default when key is missing
+"""
 
 from __future__ import annotations
 
@@ -11,7 +27,7 @@ from custom_components.eufy_custom_integration.const import DOMAIN
 
 
 async def test_base_device_initialization(mock_coordinator: MagicMock) -> None:
-    """Test base device entity initialization."""
+    """Verify base device entity is created with correct metadata."""
     device_info = mock_coordinator.data["camera_1"]
     entity = EufyDeviceEntity(mock_coordinator, "camera_1", device_info)
 
@@ -24,7 +40,7 @@ async def test_base_device_initialization(mock_coordinator: MagicMock) -> None:
 async def test_base_device_with_entity_type(
     mock_coordinator: MagicMock,
 ) -> None:
-    """Test base device entity initialization with entity type."""
+    """Verify entity_type suffix is appended to name and unique_id."""
     device_info = mock_coordinator.data["camera_1"]
     entity = EufyDeviceEntity(
         mock_coordinator, "camera_1", device_info, "Battery"
@@ -35,7 +51,7 @@ async def test_base_device_with_entity_type(
 
 
 async def test_base_device_available(mock_coordinator: MagicMock) -> None:
-    """Test base device entity availability."""
+    """Verify entity is available when coordinator has valid data."""
     device_info = mock_coordinator.data["camera_1"]
     entity = EufyDeviceEntity(mock_coordinator, "camera_1", device_info)
 
@@ -48,7 +64,7 @@ async def test_base_device_available(mock_coordinator: MagicMock) -> None:
 async def test_base_device_not_available_when_missing(
     mock_coordinator: MagicMock,
 ) -> None:
-    """Test base device entity not available when missing from data."""
+    """Verify entity is unavailable when device_id is not in data."""
     device_info = mock_coordinator.data["camera_1"]
     entity = EufyDeviceEntity(
         mock_coordinator, "missing_device", device_info
@@ -58,7 +74,7 @@ async def test_base_device_not_available_when_missing(
 
 
 async def test_get_device_data(mock_coordinator: MagicMock) -> None:
-    """Test _get_device_data method."""
+    """Verify _get_device_data() returns the full device data dict."""
     device_info = mock_coordinator.data["camera_1"]
     entity = EufyDeviceEntity(mock_coordinator, "camera_1", device_info)
 
@@ -67,7 +83,7 @@ async def test_get_device_data(mock_coordinator: MagicMock) -> None:
 
 
 async def test_get_device_data_none(mock_coordinator: MagicMock) -> None:
-    """Test _get_device_data returns None when no data."""
+    """Verify _get_device_data() returns None for unknown device_id."""
     device_info = mock_coordinator.data["camera_1"]
     entity = EufyDeviceEntity(
         mock_coordinator, "missing_device", device_info
@@ -78,7 +94,7 @@ async def test_get_device_data_none(mock_coordinator: MagicMock) -> None:
 
 
 async def test_get_property(mock_coordinator: MagicMock) -> None:
-    """Test _get_property method."""
+    """Verify _get_property() reads values from the properties dict."""
     device_info = mock_coordinator.data["camera_1"]
     entity = EufyDeviceEntity(mock_coordinator, "camera_1", device_info)
 
@@ -87,7 +103,7 @@ async def test_get_property(mock_coordinator: MagicMock) -> None:
 
 
 async def test_get_property_default(mock_coordinator: MagicMock) -> None:
-    """Test _get_property returns default."""
+    """Verify _get_property() returns the default when key is missing."""
     device_info = mock_coordinator.data["camera_1"]
     entity = EufyDeviceEntity(mock_coordinator, "camera_1", device_info)
 

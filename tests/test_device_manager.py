@@ -1,4 +1,16 @@
-"""Tests for the Eufy Device Manager."""
+"""
+Tests for the Eufy Device Manager (device_manager.py).
+
+================================================================================
+ COVERAGE
+================================================================================
+
+ - Device manager initialisation (hass, coordinator reference)
+ - async_register_device creates device registry entry with correct fields
+   - identifiers, name, model, manufacturer, serial_number
+ - get_device returns registered device or None for unknown
+ - get_all_devices returns all registered devices
+"""
 
 from __future__ import annotations
 
@@ -15,7 +27,7 @@ from custom_components.eufy_custom_integration.const import DOMAIN
 async def test_device_manager_initialization(
     mock_hass: MagicMock, mock_coordinator: MagicMock
 ) -> None:
-    """Test device manager initialization."""
+    """Verify device manager stores references to hass and coordinator."""
     manager = EufyDeviceManager(mock_hass, mock_coordinator)
 
     assert manager.hass == mock_hass
@@ -26,7 +38,11 @@ async def test_device_manager_initialization(
 async def test_device_manager_register_device(
     mock_hass: MagicMock, mock_coordinator: MagicMock
 ) -> None:
-    """Test device manager register device."""
+    """Verify async_register_device creates a device registry entry.
+
+    Checks that async_get_or_create is called with the correct
+    identifiers, name, model, manufacturer, and serial_number.
+    """
     mock_device_registry = MagicMock()
     mock_device_entry = MagicMock()
     mock_device_registry.async_get_or_create.return_value = mock_device_entry
@@ -56,7 +72,7 @@ async def test_device_manager_register_device(
 async def test_device_manager_get_device(
     mock_hass: MagicMock, mock_coordinator: MagicMock
 ) -> None:
-    """Test device manager get device."""
+    """Verify get_device returns the device or None if unknown."""
     mock_device_registry = MagicMock()
     mock_device_registry.async_get_or_create.return_value = MagicMock()
 
@@ -79,7 +95,7 @@ async def test_device_manager_get_device(
 async def test_device_manager_get_all_devices(
     mock_hass: MagicMock, mock_coordinator: MagicMock
 ) -> None:
-    """Test device manager get all devices."""
+    """Verify get_all_devices returns all registered devices."""
     mock_device_registry = MagicMock()
     mock_device_registry.async_get_or_create.return_value = MagicMock()
 

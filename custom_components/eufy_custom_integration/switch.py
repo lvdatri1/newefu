@@ -1,4 +1,34 @@
-"""Switch platform for the Eufy Custom Integration."""
+"""
+Switch platform for the Eufy Custom Integration.
+
+================================================================================
+ ROLE
+================================================================================
+
+ Provides toggle switches for Eufy device features. Currently:
+   - **MotionDetectionSwitch**:  Enables/disables motion detection on cameras
+                                 and doorbells.
+
+================================================================================
+ DATA FLOW
+================================================================================
+
+ async_setup_entry()
+   -> creates EufyMotionDetectionSwitch per camera/doorbell/switch-type device
+   -> async_add_entities() registers them with HA
+   -> is_on         <- properties.motion_detection
+   -> async_turn_on -> sets properties.motion_detection = True
+   -> async_turn_off -> sets properties.motion_detection = False
+
+================================================================================
+ EXTENSION POINTS
+================================================================================
+
+ To add a new toggle:
+   1. Subclass EufySwitch.
+   2. Override is_on, async_turn_on, async_turn_off.
+   3. Instantiate in async_setup_entry().
+"""
 
 from __future__ import annotations
 
@@ -19,7 +49,16 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up Eufy switch entities."""
+    """Set up Eufy switch entities from a config entry.
+
+    Creates a motion detection switch for every camera, doorbell, and
+    generic switch-type device.
+
+    Args:
+        hass: HomeAssistant instance.
+        entry: The ConfigEntry for this integration.
+        async_add_entities: HA callback to register new entities.
+    """
     coordinator: EufyDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id][
         "coordinator"
     ]
@@ -36,11 +75,21 @@ async def async_setup_entry(
 
 
 class EufySwitch(EufyDeviceEntity, SwitchEntity):
-    """Base class for Eufy switches."""
+    """Base class for all Eufy switches.
+
+    Extends EufyDeviceEntity with SwitchEntity for HA toggle compatibility.
+    Subclasses must override is_on, async_turn_on, async_turn_off.
+    """
 
 
 class EufyMotionDetectionSwitch(EufySwitch):
-    """Representation of a Eufy motion detection switch."""
+    """Toggle for a Eufy device's motion detection.
+
+    When turned on, the camera/doorbell will detect motion and fire
+    events. When turned off, motion detection is disabled.
+
+    State is stored in coordinator.data[device_id].properties.motion_detection.
+    """
 
     def __init__(
         self,
@@ -48,16 +97,26 @@ class EufyMotionDetectionSwitch(EufySwitch):
         device_id: str,
         device_info: dict[str, Any],
     ) -> None:
-        """Initialize the motion detection switch."""
+        """Initialise the motion detection switch.
+
+        Args:
+            coordinator: The data coordinator.
+            device_id:   The Eufy device ID.
+            device_info: The device data dict.
+        """
         super().__init__(coordinator, device_id, device_info, "Motion Detection")
 
     @property
     def is_on(self) -> bool:
-        """Return whether motion detection is on."""
+        """Return True if motion detection is currently enabled."""
         return self._get_property("motion_detection", False)
 
     async def async_turn_on(self, **kwargs: Any) -> None:
-        """Turn on motion detection."""
+        """Enable motion detection.
+
+        Updates the local property and triggers a coordinator re-notify
+        so HA entities see the new state immediately.
+        """
         data = self._get_device_data()
         if data:
             properties = data.get("properties", {})
@@ -66,7 +125,10 @@ class EufyMotionDetectionSwitch(EufySwitch):
             self.coordinator.async_set_updated_data(self.coordinator.data or {})
 
     async def async_turn_off(self, **kwargs: Any) -> None:
-        """Turn off motion detection."""
+        """Disable motion detection.
+
+        Updates the local property and triggers a coordinator re-notify.
+        """
         data = self._get_device_data()
         if data:
             properties = data.get("properties", {})

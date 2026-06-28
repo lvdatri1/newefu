@@ -1,4 +1,19 @@
-"""Tests for the Eufy Camera platform."""
+"""
+Tests for the Eufy Camera platform (camera.py).
+
+================================================================================
+ COVERAGE
+================================================================================
+
+ - Camera entity initialisation with correct name, unique_id, model
+ - Supported features (stream)
+ - Streaming state (is_streaming, is_recording)
+ - Stream source URL retrieval
+ - Motion detection enable/disable toggle
+ - Camera image capture (placeholder)
+ - Entity availability when coordinator data is missing
+ - Doorbell treated as camera entity
+"""
 
 from __future__ import annotations
 
@@ -10,7 +25,11 @@ from custom_components.eufy_custom_integration.camera import EufyCamera
 
 
 async def test_camera_initialization(mock_coordinator: MagicMock) -> None:
-    """Test camera entity initialization."""
+    """Verify camera entity is created with correct metadata.
+
+    Checks name, unique_id, model, and manufacturer are populated
+    from the device info dict.
+    """
     device_info = mock_coordinator.data["camera_1"]
     camera = EufyCamera(mock_coordinator, "camera_1", device_info)
 
@@ -21,7 +40,7 @@ async def test_camera_initialization(mock_coordinator: MagicMock) -> None:
 
 
 async def test_camera_supported_features(mock_coordinator: MagicMock) -> None:
-    """Test camera supported features."""
+    """Verify camera advertises stream support."""
     device_info = mock_coordinator.data["camera_1"]
     camera = EufyCamera(mock_coordinator, "camera_1", device_info)
 
@@ -29,7 +48,7 @@ async def test_camera_supported_features(mock_coordinator: MagicMock) -> None:
 
 
 async def test_camera_stream_source(mock_coordinator: MagicMock) -> None:
-    """Test camera stream source."""
+    """Verify stream_source() returns the RTSP URL from device data."""
     device_info = mock_coordinator.data["camera_1"]
     camera = EufyCamera(mock_coordinator, "camera_1", device_info)
 
@@ -38,8 +57,8 @@ async def test_camera_stream_source(mock_coordinator: MagicMock) -> None:
 
 
 async def test_camera_stream_source_none(mock_coordinator: MagicMock) -> None:
-    """Test camera stream source when no stream URL."""
-    device_info = mock_coordinator.data["camera_1"]
+    """Verify stream_source() returns None when stream_url is absent."""
+    device_info = dict(mock_coordinator.data["camera_1"])
     del device_info["stream_url"]
     camera = EufyCamera(mock_coordinator, "camera_1", device_info)
 
@@ -48,7 +67,7 @@ async def test_camera_stream_source_none(mock_coordinator: MagicMock) -> None:
 
 
 async def test_camera_is_not_streaming(mock_coordinator: MagicMock) -> None:
-    """Test camera streaming state."""
+    """Verify is_streaming and is_recording are False at idle."""
     device_info = mock_coordinator.data["camera_1"]
     camera = EufyCamera(mock_coordinator, "camera_1", device_info)
 
@@ -57,7 +76,7 @@ async def test_camera_is_not_streaming(mock_coordinator: MagicMock) -> None:
 
 
 async def test_camera_is_streaming(mock_coordinator: MagicMock) -> None:
-    """Test camera streaming state when streaming."""
+    """Verify is_streaming is True when state is 'streaming'."""
     device_info = dict(mock_coordinator.data["camera_1"])
     device_info["state"] = "streaming"
     camera = EufyCamera(mock_coordinator, "camera_1", device_info)
@@ -66,7 +85,7 @@ async def test_camera_is_streaming(mock_coordinator: MagicMock) -> None:
 
 
 async def test_camera_motion_detection(mock_coordinator: MagicMock) -> None:
-    """Test camera motion detection toggle."""
+    """Verify motion detection toggle works correctly."""
     device_info = mock_coordinator.data["camera_1"]
     camera = EufyCamera(mock_coordinator, "camera_1", device_info)
 
@@ -80,7 +99,7 @@ async def test_camera_motion_detection(mock_coordinator: MagicMock) -> None:
 
 
 async def test_camera_camera_image(mock_coordinator: MagicMock) -> None:
-    """Test camera image."""
+    """Verify async_camera_image returns empty bytes (placeholder)."""
     device_info = mock_coordinator.data["camera_1"]
     camera = EufyCamera(mock_coordinator, "camera_1", device_info)
 
@@ -89,7 +108,7 @@ async def test_camera_camera_image(mock_coordinator: MagicMock) -> None:
 
 
 async def test_camera_available(mock_coordinator: MagicMock) -> None:
-    """Test camera availability."""
+    """Verify camera is unavailable when coordinator data is None."""
     device_info = mock_coordinator.data["camera_1"]
     camera = EufyCamera(mock_coordinator, "camera_1", device_info)
 
@@ -100,7 +119,10 @@ async def test_camera_available(mock_coordinator: MagicMock) -> None:
 
 
 async def test_doorbell_camera_setup(mock_coordinator: MagicMock) -> None:
-    """Test doorbell camera setup."""
+    """Verify doorbell devices are also exposed as Camera entities.
+
+    Doorbells with cameras should support the same Camera interface.
+    """
     device_info = mock_coordinator.data["doorbell_1"]
     camera = EufyCamera(mock_coordinator, "doorbell_1", device_info)
 

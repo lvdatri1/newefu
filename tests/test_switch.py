@@ -1,4 +1,16 @@
-"""Tests for the Eufy Switch platform."""
+"""
+Tests for the Eufy Switch platform (switch.py).
+
+================================================================================
+ COVERAGE
+================================================================================
+
+ - Motion detection switch initialisation (name, unique_id)
+ - Switch is off when motion_detection property is False
+ - Switch turns on (sets motion_detection = True)
+ - Switch turns off (sets motion_detection = False)
+ - Switch availability when coordinator has data
+"""
 
 from __future__ import annotations
 
@@ -8,7 +20,7 @@ from custom_components.eufy_custom_integration.switch import EufyMotionDetection
 
 
 async def test_switch_initialization(mock_coordinator: MagicMock) -> None:
-    """Test switch initialization."""
+    """Verify switch entity is created with correct metadata."""
     device_info = mock_coordinator.data["camera_1"]
     switch = EufyMotionDetectionSwitch(mock_coordinator, "camera_1", device_info)
 
@@ -17,7 +29,7 @@ async def test_switch_initialization(mock_coordinator: MagicMock) -> None:
 
 
 async def test_switch_is_off(mock_coordinator: MagicMock) -> None:
-    """Test switch off state."""
+    """Verify switch is off when motion_detection is False in properties."""
     device_info = mock_coordinator.data["camera_1"]
     switch = EufyMotionDetectionSwitch(mock_coordinator, "camera_1", device_info)
 
@@ -25,7 +37,7 @@ async def test_switch_is_off(mock_coordinator: MagicMock) -> None:
 
 
 async def test_switch_turn_on(mock_coordinator: MagicMock) -> None:
-    """Test switch turn on."""
+    """Verify async_turn_on sets motion_detection to True and notifies HA."""
     device_info = mock_coordinator.data["camera_1"]
     switch = EufyMotionDetectionSwitch(mock_coordinator, "camera_1", device_info)
 
@@ -35,7 +47,7 @@ async def test_switch_turn_on(mock_coordinator: MagicMock) -> None:
 
 
 async def test_switch_turn_off(mock_coordinator: MagicMock) -> None:
-    """Test switch turn off."""
+    """Verify async_turn_off sets motion_detection to False and notifies HA."""
     device_info = dict(mock_coordinator.data["camera_1"])
     device_info["properties"] = {"motion_detection": True}
     switch = EufyMotionDetectionSwitch(mock_coordinator, "camera_1", device_info)
@@ -47,7 +59,7 @@ async def test_switch_turn_off(mock_coordinator: MagicMock) -> None:
 
 
 async def test_switch_availability(mock_coordinator: MagicMock) -> None:
-    """Test switch availability."""
+    """Verify switch is available when coordinator has valid data."""
     device_info = mock_coordinator.data["camera_1"]
     switch = EufyMotionDetectionSwitch(mock_coordinator, "camera_1", device_info)
 

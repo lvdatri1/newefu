@@ -1,4 +1,20 @@
-"""Tests for the Eufy Coordinator."""
+"""
+Tests for the Eufy Data Update Coordinator (coordinator.py).
+
+================================================================================
+ COVERAGE
+================================================================================
+
+ - Coordinator initialisation with correct meta (name, entry)
+ - _fetch_devices() returns expected device structure
+   - Camera device has correct fields (name, type, battery, wifi, online)
+   - Doorbell device has correct fields
+   - Ground base device has correct fields and disarmed state
+ - set_mode updates properties.mode and notifies HA
+ - set_mode returns False for unknown device
+ - trigger_alarm sets state to "alarm_triggered" and notifies HA
+ - disarm_alarm sets state to "disarmed" and notifies HA
+"""
 
 from __future__ import annotations
 
@@ -13,7 +29,7 @@ from custom_components.eufy_custom_integration.const import DOMAIN
 async def test_coordinator_initialization(
     mock_hass: MagicMock, mock_config_entry: MagicMock
 ) -> None:
-    """Test coordinator initialization."""
+    """Verify coordinator is initialised with correct name and entry."""
     coordinator = EufyDataUpdateCoordinator(mock_hass, mock_config_entry)
 
     assert coordinator.name == DOMAIN
@@ -23,7 +39,11 @@ async def test_coordinator_initialization(
 async def test_coordinator_fetch_devices(
     mock_hass: MagicMock, mock_config_entry: MagicMock
 ) -> None:
-    """Test coordinator fetch devices."""
+    """Verify _fetch_devices() returns all expected device types.
+
+    Checks that camera, doorbell, and ground_base are present and
+    have the correct identifying fields.
+    """
     coordinator = EufyDataUpdateCoordinator(mock_hass, mock_config_entry)
 
     data = await coordinator._fetch_devices()
@@ -52,7 +72,7 @@ async def test_coordinator_fetch_devices(
 async def test_coordinator_set_mode(
     mock_hass: MagicMock, mock_config_entry: MagicMock
 ) -> None:
-    """Test coordinator set mode."""
+    """Verify set_mode updates properties.mode and triggers HA update."""
     coordinator = EufyDataUpdateCoordinator(mock_hass, mock_config_entry)
     coordinator.data = await coordinator._fetch_devices()
 
@@ -66,7 +86,7 @@ async def test_coordinator_set_mode(
 async def test_coordinator_set_mode_invalid_device(
     mock_hass: MagicMock, mock_config_entry: MagicMock
 ) -> None:
-    """Test coordinator set mode with invalid device."""
+    """Verify set_mode returns False for an unknown device_id."""
     coordinator = EufyDataUpdateCoordinator(mock_hass, mock_config_entry)
     coordinator.data = await coordinator._fetch_devices()
 
@@ -77,7 +97,7 @@ async def test_coordinator_set_mode_invalid_device(
 async def test_coordinator_trigger_alarm(
     mock_hass: MagicMock, mock_config_entry: MagicMock
 ) -> None:
-    """Test coordinator trigger alarm."""
+    """Verify trigger_alarm sets state to 'alarm_triggered'."""
     coordinator = EufyDataUpdateCoordinator(mock_hass, mock_config_entry)
     coordinator.data = await coordinator._fetch_devices()
 
@@ -91,7 +111,7 @@ async def test_coordinator_trigger_alarm(
 async def test_coordinator_disarm_alarm(
     mock_hass: MagicMock, mock_config_entry: MagicMock
 ) -> None:
-    """Test coordinator disarm alarm."""
+    """Verify disarm_alarm sets state back to 'disarmed'."""
     coordinator = EufyDataUpdateCoordinator(mock_hass, mock_config_entry)
     coordinator.data = await coordinator._fetch_devices()
     coordinator.data["ground_base_1"]["state"] = "alarm_triggered"

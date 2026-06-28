@@ -1,4 +1,16 @@
-"""Tests for the Eufy Select platform."""
+"""
+Tests for the Eufy Select platform (select.py).
+
+================================================================================
+ COVERAGE
+================================================================================
+
+ - Mode selector initialisation (name, unique_id)
+ - Available options list matches expected security modes
+ - Current option reads from properties.mode
+ - Selecting a valid option updates state and notifies HA
+ - Selecting an invalid option does not change state
+"""
 
 from __future__ import annotations
 
@@ -11,7 +23,7 @@ from custom_components.eufy_custom_integration.select import (
 
 
 async def test_select_initialization(mock_coordinator: MagicMock) -> None:
-    """Test select initialization."""
+    """Verify mode selector entity is created with correct metadata."""
     device_info = mock_coordinator.data["ground_base_1"]
     select = EufyModeSelect(mock_coordinator, "ground_base_1", device_info)
 
@@ -20,7 +32,7 @@ async def test_select_initialization(mock_coordinator: MagicMock) -> None:
 
 
 async def test_select_options(mock_coordinator: MagicMock) -> None:
-    """Test select options."""
+    """Verify the available options match the full security mode list."""
     device_info = mock_coordinator.data["ground_base_1"]
     select = EufyModeSelect(mock_coordinator, "ground_base_1", device_info)
 
@@ -28,7 +40,7 @@ async def test_select_options(mock_coordinator: MagicMock) -> None:
 
 
 async def test_select_current_option(mock_coordinator: MagicMock) -> None:
-    """Test select current option."""
+    """Verify current_option returns the mode from device properties."""
     device_info = mock_coordinator.data["ground_base_1"]
     select = EufyModeSelect(mock_coordinator, "ground_base_1", device_info)
 
@@ -36,7 +48,7 @@ async def test_select_current_option(mock_coordinator: MagicMock) -> None:
 
 
 async def test_select_select_option(mock_coordinator: MagicMock) -> None:
-    """Test select option change."""
+    """Verify selecting a valid option updates state and triggers HA update."""
     device_info = mock_coordinator.data["ground_base_1"]
     select = EufyModeSelect(mock_coordinator, "ground_base_1", device_info)
 
@@ -48,7 +60,7 @@ async def test_select_select_option(mock_coordinator: MagicMock) -> None:
 async def test_select_select_invalid_option(
     mock_coordinator: MagicMock,
 ) -> None:
-    """Test select with invalid option."""
+    """Verify selecting an invalid option does not change the mode."""
     device_info = mock_coordinator.data["ground_base_1"]
     select = EufyModeSelect(mock_coordinator, "ground_base_1", device_info)
 

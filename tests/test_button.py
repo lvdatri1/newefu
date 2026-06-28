@@ -1,4 +1,13 @@
-"""Tests for the Eufy Button platform."""
+"""
+Tests for the Eufy Button platform (button.py).
+
+================================================================================
+ COVERAGE
+================================================================================
+
+ - Wake-up button initialisation (name, unique_id)
+ - Button press sets device state to "waking" and notifies HA
+"""
 
 from __future__ import annotations
 
@@ -8,7 +17,7 @@ from custom_components.eufy_custom_integration.button import EufyWakeUpButton
 
 
 async def test_button_initialization(mock_coordinator: MagicMock) -> None:
-    """Test button initialization."""
+    """Verify button entity is created with correct metadata."""
     device_info = mock_coordinator.data["camera_1"]
     button = EufyWakeUpButton(mock_coordinator, "camera_1", device_info)
 
@@ -17,7 +26,7 @@ async def test_button_initialization(mock_coordinator: MagicMock) -> None:
 
 
 async def test_button_press(mock_coordinator: MagicMock) -> None:
-    """Test button press."""
+    """Verify async_press sets device state to 'waking' and notifies HA."""
     device_info = mock_coordinator.data["camera_1"]
     button = EufyWakeUpButton(mock_coordinator, "camera_1", device_info)
 

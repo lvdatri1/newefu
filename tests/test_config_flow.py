@@ -1,4 +1,15 @@
-"""Config flow tests for the Eufy Custom Integration."""
+"""
+Tests for the Eufy Config Flow (config_flow.py).
+
+================================================================================
+ COVERAGE
+================================================================================
+
+ - Config flow user step shows form with expected step_id
+ - Config flow user step creates entry with provided data
+ - Config flow domain matches DOMAIN constant
+ - Config flow version is correct
+"""
 
 from __future__ import annotations
 
@@ -11,7 +22,7 @@ from custom_components.eufy_custom_integration.const import DOMAIN
 
 
 async def test_config_flow_user_step(mock_hass: MagicMock) -> None:
-    """Test config flow user step."""
+    """Verify the user step shows a form with the correct step_id."""
     flow = EufyConfigFlow()
     flow.hass = mock_hass
 
@@ -23,7 +34,7 @@ async def test_config_flow_user_step(mock_hass: MagicMock) -> None:
 async def test_config_flow_user_step_create_entry(
     mock_hass: MagicMock,
 ) -> None:
-    """Test config flow user step with data."""
+    """Verify submitting user data creates a config entry."""
     flow = EufyConfigFlow()
     flow.hass = mock_hass
 
@@ -43,12 +54,12 @@ async def test_config_flow_user_step_create_entry(
 
 
 async def test_config_flow_domain(mock_hass: MagicMock) -> None:
-    """Test config flow domain."""
+    """Verify the config flow domain matches the integration domain."""
     flow = EufyConfigFlow()
     assert flow.domain == DOMAIN
 
 
 async def test_config_flow_version(mock_hass: MagicMock) -> None:
-    """Test config flow version."""
+    """Verify the config flow version is 1."""
     flow = EufyConfigFlow()
     assert flow.VERSION == 1

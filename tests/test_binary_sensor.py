@@ -1,4 +1,20 @@
-"""Tests for the Eufy Binary Sensor platform."""
+"""
+Tests for the Eufy Binary Sensor platform (binary_sensor.py).
+
+================================================================================
+ COVERAGE
+================================================================================
+
+ - Motion sensor initialisation and device_class
+ - Motion sensor is_on returns False when no motion
+ - Motion sensor is_on returns True when motion detected
+ - Online sensor initialisation and device_class
+ - Online sensor is_on returns True when device is online
+ - Online sensor is_on returns False when device is offline
+ - Doorbell press sensor initialisation and device_class
+ - Doorbell press sensor is_on returns False when not ringing
+ - Doorbell press sensor is_on returns True when ringing
+"""
 
 from __future__ import annotations
 
@@ -14,7 +30,7 @@ from custom_components.eufy_custom_integration.binary_sensor import (
 
 
 async def test_motion_sensor_initialization(mock_coordinator: MagicMock) -> None:
-    """Test motion sensor initialization."""
+    """Verify motion sensor is created with correct metadata and device class."""
     device_info = mock_coordinator.data["camera_1"]
     sensor = EufyMotionSensor(mock_coordinator, "camera_1", device_info)
 
@@ -24,7 +40,7 @@ async def test_motion_sensor_initialization(mock_coordinator: MagicMock) -> None
 
 
 async def test_motion_sensor_no_motion(mock_coordinator: MagicMock) -> None:
-    """Test motion sensor no motion."""
+    """Verify is_on is False when properties.motion_detected is False."""
     device_info = mock_coordinator.data["camera_1"]
     sensor = EufyMotionSensor(mock_coordinator, "camera_1", device_info)
 
@@ -32,7 +48,7 @@ async def test_motion_sensor_no_motion(mock_coordinator: MagicMock) -> None:
 
 
 async def test_motion_sensor_motion_detected(mock_coordinator: MagicMock) -> None:
-    """Test motion sensor motion detected."""
+    """Verify is_on is True when properties.motion_detected is True."""
     device_info = dict(mock_coordinator.data["camera_1"])
     device_info["properties"] = {"motion_detected": True}
     sensor = EufyMotionSensor(mock_coordinator, "camera_1", device_info)
@@ -41,7 +57,7 @@ async def test_motion_sensor_motion_detected(mock_coordinator: MagicMock) -> Non
 
 
 async def test_online_sensor_initialization(mock_coordinator: MagicMock) -> None:
-    """Test online sensor initialization."""
+    """Verify online sensor is created with correct metadata."""
     device_info = mock_coordinator.data["camera_1"]
     sensor = EufyOnlineSensor(mock_coordinator, "camera_1", device_info)
 
@@ -51,7 +67,7 @@ async def test_online_sensor_initialization(mock_coordinator: MagicMock) -> None
 
 
 async def test_online_sensor_is_online(mock_coordinator: MagicMock) -> None:
-    """Test online sensor when device is online."""
+    """Verify is_on is True when device is_online is True."""
     device_info = mock_coordinator.data["camera_1"]
     sensor = EufyOnlineSensor(mock_coordinator, "camera_1", device_info)
 
@@ -59,7 +75,7 @@ async def test_online_sensor_is_online(mock_coordinator: MagicMock) -> None:
 
 
 async def test_online_sensor_is_offline(mock_coordinator: MagicMock) -> None:
-    """Test online sensor when device is offline."""
+    """Verify is_on is False when device is_online is False."""
     device_info = dict(mock_coordinator.data["camera_1"])
     device_info["is_online"] = False
     sensor = EufyOnlineSensor(mock_coordinator, "camera_1", device_info)
@@ -70,7 +86,7 @@ async def test_online_sensor_is_offline(mock_coordinator: MagicMock) -> None:
 async def test_doorbell_press_sensor_initialization(
     mock_coordinator: MagicMock,
 ) -> None:
-    """Test doorbell press sensor initialization."""
+    """Verify doorbell press sensor is created with correct metadata."""
     device_info = mock_coordinator.data["doorbell_1"]
     sensor = EufyDoorbellPressSensor(mock_coordinator, "doorbell_1", device_info)
 
@@ -80,7 +96,7 @@ async def test_doorbell_press_sensor_initialization(
 
 
 async def test_doorbell_not_ringing(mock_coordinator: MagicMock) -> None:
-    """Test doorbell not ringing."""
+    """Verify is_on is False when properties.ringing is False."""
     device_info = mock_coordinator.data["doorbell_1"]
     sensor = EufyDoorbellPressSensor(mock_coordinator, "doorbell_1", device_info)
 
@@ -88,7 +104,7 @@ async def test_doorbell_not_ringing(mock_coordinator: MagicMock) -> None:
 
 
 async def test_doorbell_ringing(mock_coordinator: MagicMock) -> None:
-    """Test doorbell ringing."""
+    """Verify is_on is True when properties.ringing is True."""
     device_info = dict(mock_coordinator.data["doorbell_1"])
     device_info["properties"] = {"ringing": True}
     sensor = EufyDoorbellPressSensor(mock_coordinator, "doorbell_1", device_info)

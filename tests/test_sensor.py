@@ -1,4 +1,17 @@
-"""Tests for the Eufy Sensor platform."""
+"""
+Tests for the Eufy Sensor platform (sensor.py).
+
+================================================================================
+ COVERAGE
+================================================================================
+
+ - Battery sensor initialisation (name, unique_id, device_class, unit)
+ - Battery sensor value read from coordinator data
+ - Battery sensor returns None when no data available
+ - WiFi signal sensor initialisation
+ - WiFi signal sensor value read from coordinator data
+ - Sensor availability when coordinator has data
+"""
 
 from __future__ import annotations
 
@@ -14,7 +27,7 @@ from custom_components.eufy_custom_integration.sensor import (
 
 
 async def test_battery_sensor_initialization(mock_coordinator: MagicMock) -> None:
-    """Test battery sensor initialization."""
+    """Verify battery sensor metadata is set correctly from device info."""
     device_info = mock_coordinator.data["camera_1"]
     sensor = EufyBatterySensor(mock_coordinator, "camera_1", device_info)
 
@@ -25,7 +38,7 @@ async def test_battery_sensor_initialization(mock_coordinator: MagicMock) -> Non
 
 
 async def test_battery_sensor_value(mock_coordinator: MagicMock) -> None:
-    """Test battery sensor value."""
+    """Verify battery sensor reads the correct percentage from data."""
     device_info = mock_coordinator.data["camera_1"]
     sensor = EufyBatterySensor(mock_coordinator, "camera_1", device_info)
 
@@ -33,7 +46,7 @@ async def test_battery_sensor_value(mock_coordinator: MagicMock) -> None:
 
 
 async def test_battery_sensor_value_none(mock_coordinator: MagicMock) -> None:
-    """Test battery sensor value when no data."""
+    """Verify battery sensor returns None when coordinator has no data."""
     device_info = mock_coordinator.data["camera_1"]
     sensor = EufyBatterySensor(mock_coordinator, "camera_1", device_info)
 
@@ -44,7 +57,7 @@ async def test_battery_sensor_value_none(mock_coordinator: MagicMock) -> None:
 async def test_wifi_signal_sensor_initialization(
     mock_coordinator: MagicMock,
 ) -> None:
-    """Test WiFi signal sensor initialization."""
+    """Verify WiFi signal sensor metadata is set correctly."""
     device_info = mock_coordinator.data["camera_1"]
     sensor = EufyWiFiSignalSensor(mock_coordinator, "camera_1", device_info)
 
@@ -55,7 +68,7 @@ async def test_wifi_signal_sensor_initialization(
 
 
 async def test_wifi_signal_sensor_value(mock_coordinator: MagicMock) -> None:
-    """Test WiFi signal sensor value."""
+    """Verify WiFi signal sensor reads the correct dBm from data."""
     device_info = mock_coordinator.data["camera_1"]
     sensor = EufyWiFiSignalSensor(mock_coordinator, "camera_1", device_info)
 
@@ -63,7 +76,7 @@ async def test_wifi_signal_sensor_value(mock_coordinator: MagicMock) -> None:
 
 
 async def test_sensor_availability(mock_coordinator: MagicMock) -> None:
-    """Test sensor availability."""
+    """Verify sensor is available when coordinator has valid data."""
     device_info = mock_coordinator.data["camera_1"]
     sensor = EufyBatterySensor(mock_coordinator, "camera_1", device_info)
 
