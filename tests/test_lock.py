@@ -39,8 +39,8 @@ async def test_lock_is_locked(mock_coordinator: MagicMock) -> None:
 
 async def test_lock_is_unlocked(mock_coordinator: MagicMock) -> None:
     """Verify is_locked returns False when properties.locked is False."""
-    device_info = dict(mock_coordinator.data["lock_1"])
-    device_info["properties"] = {"locked": False}
+    mock_coordinator.data["lock_1"]["properties"]["locked"] = False
+    device_info = mock_coordinator.data["lock_1"]
     lock = EufyLock(mock_coordinator, "lock_1", device_info)
 
     assert lock.is_locked is False
@@ -48,8 +48,8 @@ async def test_lock_is_unlocked(mock_coordinator: MagicMock) -> None:
 
 async def test_lock_lock(mock_coordinator: MagicMock) -> None:
     """Verify async_lock sets locked=True and locking=True."""
-    device_info = dict(mock_coordinator.data["lock_1"])
-    device_info["properties"] = {"locked": False}
+    mock_coordinator.data["lock_1"]["properties"]["locked"] = False
+    device_info = mock_coordinator.data["lock_1"]
     lock = EufyLock(mock_coordinator, "lock_1", device_info)
 
     assert lock.is_locked is False
@@ -73,8 +73,8 @@ async def test_lock_unlock(mock_coordinator: MagicMock) -> None:
 
 async def test_lock_jammed(mock_coordinator: MagicMock) -> None:
     """Verify is_jammed returns True when properties.jammed is True."""
-    device_info = dict(mock_coordinator.data["lock_1"])
-    device_info["properties"] = {"jammed": True}
+    mock_coordinator.data["lock_1"]["properties"]["jammed"] = True
+    device_info = mock_coordinator.data["lock_1"]
     lock = EufyLock(mock_coordinator, "lock_1", device_info)
 
     assert lock.is_jammed is True

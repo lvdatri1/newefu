@@ -52,6 +52,7 @@ Test fixtures and helpers for the Eufy Custom Integration.
 
 from __future__ import annotations
 
+import copy
 import os
 from collections.abc import Generator
 from typing import Any
@@ -242,7 +243,7 @@ def mock_device_data() -> dict[str, Any]:
     Returns:
         A copy of MOCK_DEVICE_DATA.
     """
-    return dict(MOCK_DEVICE_DATA)
+    return copy.deepcopy(MOCK_DEVICE_DATA)
 
 
 @pytest.fixture

@@ -49,8 +49,8 @@ async def test_motion_sensor_no_motion(mock_coordinator: MagicMock) -> None:
 
 async def test_motion_sensor_motion_detected(mock_coordinator: MagicMock) -> None:
     """Verify is_on is True when properties.motion_detected is True."""
-    device_info = dict(mock_coordinator.data["camera_1"])
-    device_info["properties"] = {"motion_detected": True}
+    mock_coordinator.data["camera_1"]["properties"]["motion_detected"] = True
+    device_info = mock_coordinator.data["camera_1"]
     sensor = EufyMotionSensor(mock_coordinator, "camera_1", device_info)
 
     assert sensor.is_on is True
@@ -76,8 +76,8 @@ async def test_online_sensor_is_online(mock_coordinator: MagicMock) -> None:
 
 async def test_online_sensor_is_offline(mock_coordinator: MagicMock) -> None:
     """Verify is_on is False when device is_online is False."""
-    device_info = dict(mock_coordinator.data["camera_1"])
-    device_info["is_online"] = False
+    mock_coordinator.data["camera_1"]["is_online"] = False
+    device_info = mock_coordinator.data["camera_1"]
     sensor = EufyOnlineSensor(mock_coordinator, "camera_1", device_info)
 
     assert sensor.is_on is False
@@ -105,8 +105,8 @@ async def test_doorbell_not_ringing(mock_coordinator: MagicMock) -> None:
 
 async def test_doorbell_ringing(mock_coordinator: MagicMock) -> None:
     """Verify is_on is True when properties.ringing is True."""
-    device_info = dict(mock_coordinator.data["doorbell_1"])
-    device_info["properties"] = {"ringing": True}
+    mock_coordinator.data["doorbell_1"]["properties"]["ringing"] = True
+    device_info = mock_coordinator.data["doorbell_1"]
     sensor = EufyDoorbellPressSensor(mock_coordinator, "doorbell_1", device_info)
 
     assert sensor.is_on is True

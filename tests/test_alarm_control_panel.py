@@ -73,8 +73,8 @@ async def test_alarm_disarmed_state(mock_coordinator: MagicMock) -> None:
 
 async def test_alarm_armed_home_state(mock_coordinator: MagicMock) -> None:
     """Verify state is STATE_ALARM_ARMED_HOME when mode is 'home'."""
-    device_info = dict(mock_coordinator.data["ground_base_1"])
-    device_info["properties"] = {"mode": "home"}
+    mock_coordinator.data["ground_base_1"]["properties"]["mode"] = "home"
+    device_info = mock_coordinator.data["ground_base_1"]
     alarm = EufyAlarmControlPanel(mock_coordinator, "ground_base_1", device_info)
 
     assert alarm.state == STATE_ALARM_ARMED_HOME
@@ -82,8 +82,8 @@ async def test_alarm_armed_home_state(mock_coordinator: MagicMock) -> None:
 
 async def test_alarm_armed_away_state(mock_coordinator: MagicMock) -> None:
     """Verify state is STATE_ALARM_ARMED_AWAY when mode is 'away'."""
-    device_info = dict(mock_coordinator.data["ground_base_1"])
-    device_info["properties"] = {"mode": "away"}
+    mock_coordinator.data["ground_base_1"]["properties"]["mode"] = "away"
+    device_info = mock_coordinator.data["ground_base_1"]
     alarm = EufyAlarmControlPanel(mock_coordinator, "ground_base_1", device_info)
 
     assert alarm.state == STATE_ALARM_ARMED_AWAY
@@ -91,8 +91,8 @@ async def test_alarm_armed_away_state(mock_coordinator: MagicMock) -> None:
 
 async def test_alarm_triggered_state(mock_coordinator: MagicMock) -> None:
     """Verify state is STATE_ALARM_TRIGGERED when state is 'alarm_triggered'."""
-    device_info = dict(mock_coordinator.data["ground_base_1"])
-    device_info["state"] = "alarm_triggered"
+    mock_coordinator.data["ground_base_1"]["state"] = "alarm_triggered"
+    device_info = mock_coordinator.data["ground_base_1"]
     alarm = EufyAlarmControlPanel(mock_coordinator, "ground_base_1", device_info)
 
     assert alarm.state == STATE_ALARM_TRIGGERED

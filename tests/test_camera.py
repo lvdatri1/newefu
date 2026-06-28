@@ -58,8 +58,8 @@ async def test_camera_stream_source(mock_coordinator: MagicMock) -> None:
 
 async def test_camera_stream_source_none(mock_coordinator: MagicMock) -> None:
     """Verify stream_source() returns None when stream_url is absent."""
-    device_info = dict(mock_coordinator.data["camera_1"])
-    del device_info["stream_url"]
+    mock_coordinator.data["camera_1"]["stream_url"] = None
+    device_info = mock_coordinator.data["camera_1"]
     camera = EufyCamera(mock_coordinator, "camera_1", device_info)
 
     source = await camera.stream_source()
@@ -77,8 +77,8 @@ async def test_camera_is_not_streaming(mock_coordinator: MagicMock) -> None:
 
 async def test_camera_is_streaming(mock_coordinator: MagicMock) -> None:
     """Verify is_streaming is True when state is 'streaming'."""
-    device_info = dict(mock_coordinator.data["camera_1"])
-    device_info["state"] = "streaming"
+    mock_coordinator.data["camera_1"]["state"] = "streaming"
+    device_info = mock_coordinator.data["camera_1"]
     camera = EufyCamera(mock_coordinator, "camera_1", device_info)
 
     assert camera.is_streaming is True

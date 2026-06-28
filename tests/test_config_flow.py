@@ -53,9 +53,19 @@ async def test_config_flow_user_step_create_entry(
 
 
 async def test_config_flow_domain(mock_hass: MagicMock) -> None:
-    """Verify the config flow domain matches the integration domain."""
+    """Verify the config flow title matches the username when provided."""
     flow = EufyConfigFlow()
-    assert flow.domain == DOMAIN
+    flow.hass = mock_hass
+    result = await flow.async_step_user(
+        user_input={
+            "username": "test@eufy.com",
+            "password": "test",
+            "country": "US",
+            "poll_interval": 30,
+        }
+    )
+    assert result["type"] == data_entry_flow.FlowResultType.CREATE_ENTRY
+    assert result["title"] == "test@eufy.com"
 
 
 async def test_config_flow_version(mock_hass: MagicMock) -> None:

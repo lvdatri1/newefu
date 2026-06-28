@@ -149,6 +149,11 @@ class EufyAlarmControlPanel(EufyDeviceEntity, AlarmControlPanelEntity):
         state constant. Falls back to STATE_ALARM_DISARMED if the
         mode is unknown.
 
+        The "state" field tracks transient conditions (alarm_triggered).
+        The "mode" field (properties.mode) tracks the persistent security
+        mode (home/away/disarmed/etc). If state is not triggered, the
+        mode determines the alarm state.
+
         Returns:
             One of STATE_ALARM_DISARMED, STATE_ALARM_ARMED_HOME,
             STATE_ALARM_ARMED_AWAY, STATE_ALARM_ARMED_CUSTOM_BYPASS,
@@ -157,8 +162,8 @@ class EufyAlarmControlPanel(EufyDeviceEntity, AlarmControlPanelEntity):
         data = self._get_device_data()
         if data:
             raw_state = data.get("state", "disarmed")
-            if raw_state in MODE_HA_MAP:
-                return MODE_HA_MAP[raw_state]
+            if raw_state == "alarm_triggered":
+                return STATE_ALARM_TRIGGERED
             mode = data.get("properties", {}).get("mode", "disarmed")
             return MODE_HA_MAP.get(mode, STATE_ALARM_DISARMED)
         return None
