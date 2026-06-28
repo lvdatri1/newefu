@@ -56,12 +56,14 @@ Eufy Custom Integration for Home Assistant.
 
 from __future__ import annotations
 
+import os
+
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import Platform
+from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr
 
-from .const import DOMAIN
+from .const import CONF_COUNTRY, DOMAIN, LOGGER
 from .coordinator import EufyDataUpdateCoordinator
 from .device_manager import EufyDeviceManager
 
@@ -84,11 +86,17 @@ PLATFORMS: list[Platform] = [
 
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
-    """Set up the Eufy integration from YAML (legacy configuration.yaml).
+    """Set up the Eufy integration from YAML or environment variables.
 
-    This is called once when HA starts, even if no config entry exists.
-    We just initialise the domain data dictionary here; actual setup
-    happens in async_setup_entry().
+    Called once when HA starts. If the EUFY_USERNAME, EUFY_PASSWORD,
+    and EUFY_COUNTRY environment variables are all set, a config entry
+    is created automatically — no UI workflow needed.
+
+    Users can set these vars in their HA runtime environment:
+      - Home Assistant OS / Supervised: add an env_vars entry in
+        configuration.yaml or use the OS-level env configuration.
+      - Home Assistant Container: pass -e EUFY_USERNAME=... to Docker.
+      - Home Assistant Core: export in the shell before starting HA.
 
     Args:
         hass: HomeAssistant instance.
@@ -98,6 +106,28 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
         True if setup succeeded.
     """
     hass.data.setdefault(DOMAIN, {})
+
+    username = os.environ.get("EUFY_USERNAME")
+    password = os.environ.get("EUFY_PASSWORD")
+    country = os.environ.get("EUFY_COUNTRY")
+
+    if username and password and country:
+        if not hass.config_entries.async_entries(DOMAIN):
+            LOGGER.info(
+                "Auto-creating config entry from EUFY_USERNAME env var"
+            )
+            hass.async_create_task(
+                hass.config_entries.flow.async_init(
+                    DOMAIN,
+                    context={"source": "import"},
+                    data={
+                        CONF_USERNAME: username,
+                        CONF_PASSWORD: password,
+                        CONF_COUNTRY: country,
+                    },
+                )
+            )
+
     return True
 
 

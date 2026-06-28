@@ -80,8 +80,12 @@ class EufyConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Eufy Custom Integration.
 
     This is the UI workflow that runs when a user clicks "Add Integration"
-    in Home Assistant. It presents a form, validates input, and creates
-    a ConfigEntry that persists the Eufy cloud account credentials.
+    in Home Assistant. It presents a form, collects credentials, and creates
+    a ConfigEntry that persists the Eufy cloud account settings.
+
+    The flow also supports an **import** step triggered by environment
+    variables (EUFY_USERNAME, EUFY_PASSWORD, EUFY_COUNTRY) — see
+    async_setup() in __init__.py.
 
     Usage:
         This class is auto-discovered by HA via the ConfigFlow domain.
@@ -89,6 +93,28 @@ class EufyConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """
 
     VERSION = 1
+
+    async def async_step_import(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Handle auto-import from environment variables.
+
+        Called by async_setup() in __init__.py when EUFY_USERNAME,
+        EUFY_PASSWORD, and EUFY_COUNTRY env vars are all present.
+
+        The import source is non-interactive — it silently creates a
+        config entry so the user never sees a UI prompt.
+
+        Args:
+            user_input: Dict with CONF_USERNAME, CONF_PASSWORD, CONF_COUNTRY.
+
+        Returns:
+            A FlowResult with the created entry.
+        """
+        return self.async_create_entry(
+            title=user_input.get(CONF_USERNAME, "Eufy Account (env)"),
+            data=user_input,
+        )
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
