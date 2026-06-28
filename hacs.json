@@ -2,7 +2,7 @@
   "name": "Eufy (lvdatri)",
   "render_readme": true,
   "homeassistant": "2024.1.0",
-  "country": ["US", "GB", "DE", "FR", "NL", "AU"],
+  "country": ["US", "GB", "DE", "FR", "NL", "AU", "NZ", "CA", "IT", "ES", "BE", "CH", "AT", "SE", "NO", "DK", "FI", "IE", "PT", "PL", "CZ", "HU", "RO", "GR", "JP", "CN", "KR", "SG", "MY", "TH", "IN", "BR", "MX", "ZA", "AE", "SA", "RU", "TR"],
   "zip_release": false,
   "filename": ""
 }
