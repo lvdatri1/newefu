@@ -13,7 +13,6 @@ Home Assistant custom integration for Eufy security devices — cameras, doorbel
 - [Features](#features)
 - [Architecture](#architecture)
 - [Installation](#installation)
-- [Configuration](#configuration)
 - [Platforms](#platforms)
 - [Services](#services)
 - [Testing](#testing)
@@ -90,7 +89,18 @@ Home Assistant custom integration for Eufy security devices — cameras, doorbel
 1. Copy `custom_components/lvdatri_eufy/` to your Home Assistant `custom_components/` directory
 2. Restart Home Assistant
 3. Add the integration via Settings → Devices & Services → Add Integration → "Eufy (lvdatri)"
-4. Enter your Eufy email, password, and country code
+
+## Configuration
+
+The integration uses **cloud authentication** — only your Eufy account credentials are needed. No hub IP or port required.
+
+| Field           | Required | Description                                            |
+|-----------------|----------|--------------------------------------------------------|
+| Email           | Yes      | Your Eufy account email address                        |
+| Password        | Yes      | Your Eufy account password                             |
+| Country Code    | Yes      | 2-letter ISO code for your account region (e.g. US, GB, DE, AU, FR) |
+
+The country code is required because Eufy routes requests to different regional API servers depending on where your account is registered.
 
 ## Platforms
 
