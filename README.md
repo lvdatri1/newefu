@@ -26,13 +26,13 @@ Home Assistant custom integration for Eufy security devices — cameras, doorbel
 
 ## Features
 
-| Device Type    | Entities                                                                 |
-|----------------|--------------------------------------------------------------------------|
-| **Camera**     | Camera (stream, snapshot, motion detection toggle)                       |
-| **Doorbell**   | Camera + Doorbell Press binary sensor                                   |
-| **Ground Base**| Alarm Control Panel + Security Mode selector + Online sensor            |
-| **Smart Lock** | Lock (lock/unlock, status, jam detection)                                |
-| **All**        | Battery sensor, WiFi signal sensor, Motion sensor, Online sensor, Wake button |
+| Device Type    | Entities                                                 | Events                          |
+|----------------|----------------------------------------------------------|---------------------------------|
+| **Camera**     | Camera (stream, snapshot, motion detection toggle)       | Motion detection                |
+| **Doorbell**   | Camera + Doorbell Press binary sensor                   | Motion detection, Ring press    |
+| **Ground Base**| Alarm Control Panel + Security Mode selector            | Alarm trigger                   |
+| **Smart Lock** | Lock (lock/unlock, status, jam detection)                | Lock/unlock events              |
+| **All**        | Battery, WiFi signal, Motion, Online sensors + Wake btn  | —                               |
 
 ---
 
@@ -41,8 +41,8 @@ Home Assistant custom integration for Eufy security devices — cameras, doorbel
 ```
                         Eufy Cloud / API
                              |
-                    EufyDataUpdateCoordinator
-                   (poll + push, holds all state)
+                     EufyDataUpdateCoordinator
+                    (polls devices + events every N sec)
                              |
                      EufyDeviceManager
                  (HA device registry integration)
@@ -59,7 +59,7 @@ Home Assistant custom integration for Eufy security devices — cameras, doorbel
 |------|---------|
 | `__init__.py` | Integration entry point, platform forwarding |
 | `const.py` | All constants, config keys, events, services |
-| `coordinator.py` | Data polling + command methods (set_mode, trigger, disarm) |
+| `coordinator.py` | Polls device state + latest events + command methods |
 | `device_manager.py` | HA device registry management |
 | `config_flow.py` | UI setup wizard (email, password, country code) |
 | `devices/base_device.py` | Base entity class with device_info + helpers |
@@ -71,7 +71,11 @@ Home Assistant custom integration for Eufy security devices — cameras, doorbel
 
 1. User enters credentials via **config_flow.py** → creates a `ConfigEntry`.
 2. **`__init__.py:async_setup_entry()`** creates the `EufyDataUpdateCoordinator` and performs an initial data refresh.
-3. The coordinator polls `_fetch_devices()` at a configurable interval (default 30s).
+3. The coordinator polls `_fetch_devices()` at a configurable interval (default 30s). Each poll:
+   - Authenticates via `pyeufysecurity` (reuses session)
+   - Fetches device list (`v2/app/get_devs_list`) for cameras, locks, sensors
+   - Fetches hub list (`v2/app/get_hub_list`) for alarm stations
+   - Fetches latest events (`v2/event/app/get_all_history_record`) for motion, rings, lock changes
 4. **`EufyDeviceManager`** registers each device in the HA device registry.
 5. Each platform (`camera.py`, `sensor.py`, etc.) creates entities that subscribe to coordinator updates.
 6. Entities read state from `coordinator.data[device_id]` and map it to HA properties.
@@ -94,13 +98,29 @@ Home Assistant custom integration for Eufy security devices — cameras, doorbel
 
 The integration uses **cloud authentication** — only your Eufy account credentials are needed. No hub IP or port required.
 
-| Field           | Required | Description                                            |
-|-----------------|----------|--------------------------------------------------------|
-| Email           | Yes      | Your Eufy account email address                        |
-| Password        | Yes      | Your Eufy account password                             |
-| Country Code    | Yes      | 2-letter ISO code for your account region (e.g. US, GB, DE, AU, FR) |
+| Field           | Required | Default | Description                                            |
+|-----------------|----------|---------|--------------------------------------------------------|
+| Email           | Yes      | —       | Your Eufy account email address                        |
+| Password        | Yes      | —       | Your Eufy account password                             |
+| Country Code    | Yes      | —       | 2-letter ISO code for your account region (e.g. US, GB, DE, AU, FR) |
+| Poll Interval   | No       | 30s     | How often to poll the API for device state + events (10-300s) |
 
-The country code is required because Eufy routes requests to different regional API servers depending on where your account is registered.
+The country code is required because Eufy routes requests to different regional API servers depending on where your account is registered. The poll interval controls how frequently the integration checks for state changes and new events (motion, doorbell rings, lock changes).
+
+### Event Updates
+
+On each poll cycle, the integration fetches two sets of data:
+- **Device state** via `v2/app/get_devs_list` — battery, WiFi, lock status, sensor state, online status
+- **Latest events** via `v2/event/app/get_all_history_record` — motion detection, doorbell rings, lock/unlock events
+
+Events are mapped to entity states within the poll interval:
+| Event Type        | Effect                                             |
+|-------------------|----------------------------------------------------|
+| Motion detected   | Motion binary sensor turns on                      |
+| Doorbell ring     | Doorbell Press binary sensor turns on              |
+| Lock/unlock       | Smart Lock entity reflects new state               |
+
+To reduce latency, set a shorter poll interval in Options (minimum 10s).
 
 ## Platforms
 
