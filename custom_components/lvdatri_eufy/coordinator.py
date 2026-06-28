@@ -54,7 +54,7 @@ Data update coordinator for the Eufy Custom Integration.
 
 from __future__ import annotations
 
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 import aiohttp
@@ -286,6 +286,31 @@ class EufyDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
             except Exception as exc:
                 LOGGER.debug("Could not fetch hub list: %s", exc)
+
+            # 4. Fetch latest events (motion, doorbell rings, etc.)
+            try:
+                latest_events = await self._api.async_get_latest_events()
+                now = datetime.now(timezone.utc).isoformat()
+                for sn, event in latest_events.items():
+                    if sn not in devices:
+                        continue
+                    event_type = (event.get("event_type", "") or "").lower()
+                    devices[sn]["last_event"] = now
+                    props = devices[sn].get("properties", {})
+
+                    if "motion" in event_type or event.get("motion") or event.get("movement"):
+                        props["motion_detected"] = True
+                    if "ring" in event_type or "doorbell" in event_type:
+                        props["ringing"] = True
+                    if "lock" in event_type or "unlock" in event_type:
+                        lock_state = event.get("lock_state", props.get("locked", False))
+                        props["locked"] = lock_state
+                        devices[sn]["state"] = "locked" if lock_state else "unlocked"
+
+                    devices[sn]["properties"] = props
+
+            except Exception as exc:
+                LOGGER.debug("Could not fetch latest events: %s", exc)
 
         except Exception as err:
             LOGGER.warning(
