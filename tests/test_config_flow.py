@@ -40,17 +40,14 @@ async def test_config_flow_user_step_create_entry(
 
     result = await flow.async_step_user(
         user_input={
-            "host": "192.168.1.1",
-            "username": "test",
+            "username": "test@eufy.com",
             "password": "test",
-            "port": 5222,
             "poll_interval": 30,
         }
     )
     assert result["type"] == data_entry_flow.FlowResultType.CREATE_ENTRY
-    assert result["title"] == "192.168.1.1"
-    assert result["data"]["host"] == "192.168.1.1"
-    assert result["data"]["username"] == "test"
+    assert result["title"] == "test@eufy.com"
+    assert result["data"]["username"] == "test@eufy.com"
 
 
 async def test_config_flow_domain(mock_hass: MagicMock) -> None:

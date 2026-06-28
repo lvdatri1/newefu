@@ -7,18 +7,21 @@ Config flow for the Eufy Custom Integration.
 
  The config flow handles the UI-based setup wizard that users follow when
  adding "Eufy Custom Integration" via Settings -> Devices & Services.
- It collects connection details (host, port, username, password) and creates
+ It collects Eufy account credentials (username + password) and creates
  a ConfigEntry that persists these settings.
+
+ Eufy uses cloud-based authentication — only an email and password are
+ required (no local hub IP or port needed).
 
 ================================================================================
  STEPS
 ================================================================================
 
- 1. user:        The initial form. Collects host, port, credentials,
-                 and poll interval. On submit, creates the config entry.
+ 1. user:        The initial form. Collects username, password, and
+                 poll interval. On submit, creates the config entry.
 
  FUTURE STEPS (to implement):
-   - async_step_reauth:    Handle credential expiry.
+   - async_step_reauth:    Handle credential expiry / 2FA challenge.
    - async_step_reconfigure: Allow editing options after setup.
 
 ================================================================================
@@ -38,14 +41,12 @@ from typing import Any
 import voluptuous as vol
 
 from homeassistant import config_entries
-from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_PORT, CONF_USERNAME
+from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.data_entry_flow import FlowResult
-from homeassistant.helpers import selector
 
 from .const import (
     CONF_POLL_INTERVAL,
     DEFAULT_POLL_INTERVAL,
-    DEFAULT_PORT,
     DOMAIN,
 )
 
@@ -55,7 +56,7 @@ class EufyConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     This is the UI workflow that runs when a user clicks "Add Integration"
     in Home Assistant. It presents a form, validates input, and creates
-    a ConfigEntry that persists the connection settings.
+    a ConfigEntry that persists the Eufy cloud account credentials.
 
     Usage:
         This class is auto-discovered by HA via the ConfigFlow domain.
@@ -73,11 +74,11 @@ class EufyConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         If user_input is provided, create the config entry.
 
         The form collects:
-          - host (required):          IP address or hostname of Eufy hub
-          - username (required):      Eufy account username
+          - username (required):      Eufy account email
           - password (required):      Eufy account password
-          - port (optional, default 5222):  Connection port
-          - poll_interval (optional, default 30s):  How often to poll
+          - poll_interval (optional, default 30s):  How often to poll the API
+
+        Note: No host/port is needed — Eufy uses cloud authentication.
 
         Args:
             user_input: Dict of user-provided values, or None to show form.
@@ -89,19 +90,14 @@ class EufyConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         if user_input is not None:
             return self.async_create_entry(
-                title=user_input.get(CONF_HOST, "Eufy Hub"),
+                title=user_input.get(CONF_USERNAME, "Eufy Account"),
                 data=user_input,
             )
 
-        # --- Form schema -----------------------------------------------
-        # vol.Required fields must be filled; vol.Optional fields have
-        # defaults. The poll_interval is coerced to int and clamped 10-300.
         schema = vol.Schema(
             {
-                vol.Required(CONF_HOST): str,
                 vol.Required(CONF_USERNAME): str,
                 vol.Required(CONF_PASSWORD): str,
-                vol.Optional(CONF_PORT, default=DEFAULT_PORT): int,
                 vol.Optional(
                     CONF_POLL_INTERVAL, default=DEFAULT_POLL_INTERVAL
                 ): vol.All(vol.Coerce(int), vol.Range(min=10, max=300)),

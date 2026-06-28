@@ -149,13 +149,12 @@ pytest tests/ --cov=custom_components.eufy_custom_integration -v
 Runs against your actual Eufy hardware. **Set these environment variables:**
 
 ```bash
-# Replace with your Eufy hub IP and account credentials
-export EUFY_HOST="192.168.1.100"
+# Replace with your Eufy account credentials
 export EUFY_USERNAME="your@email.com"
 export EUFY_PASSWORD="your_secure_password"
 
-# Optional: override port and poll interval
-export EUFY_PORT="5222"
+# Optional: override poll interval
+# export EUFY_POLL_INTERVAL="30"
 
 # Run integration tests (requires --run-real flag)
 pytest tests/ -v --run-real
@@ -166,10 +165,8 @@ pytest tests/ -v --run-real
 #### Example `.env` file (do not commit):
 
 ```bash
-EUFY_HOST=192.168.1.100
 EUFY_USERNAME=your@email.com
 EUFY_PASSWORD=your_secure_password
-EUFY_PORT=5222
 ```
 
 ### Test Structure

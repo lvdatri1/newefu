@@ -3,12 +3,10 @@
     "config": {
       "step": {
         "user": {
-          "title": "Connect to Eufy Hub",
-          "description": "Enter your Eufy Hub connection details",
+          "title": "Connect to Eufy Cloud",
+          "description": "Enter your Eufy account credentials (cloud-based, no hub IP needed)",
           "data": {
-            "host": "Host",
-            "port": "Port",
-            "username": "Username",
+            "username": "Email",
             "password": "Password",
             "poll_interval": "Poll Interval (seconds)"
           }

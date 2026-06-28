@@ -1,1 +1,17 @@
-"""Strings for the Eufy Custom Integration."""
+{
+  "en": {
+    "config": {
+      "step": {
+        "user": {
+          "title": "Connect to Eufy Cloud",
+          "description": "Enter your Eufy account credentials (cloud-based, no hub IP needed)",
+          "data": {
+            "username": "Email",
+            "password": "Password",
+            "poll_interval": "Poll Interval (seconds)"
+          }
+        }
+      }
+    }
+  }
+}

@@ -49,8 +49,6 @@ MANUFACTURER: Final = "Eufy"
 # CONFIGURATION KEYS
 # Used in config_flow.py and coordinator.py for user-provided settings.
 # -----------------------------------------------------------------------
-CONF_HOST: Final = "host"
-CONF_PORT: Final = "port"
 CONF_USERNAME: Final = "username"
 CONF_PASSWORD: Final = "password"
 CONF_DEVICE_TYPE: Final = "device_type"
@@ -60,7 +58,6 @@ CONF_POLL_INTERVAL: Final = "poll_interval"
 # DEFAULTS
 # Sensible defaults for optional configuration values.
 # -----------------------------------------------------------------------
-DEFAULT_PORT: Final = 5222
 DEFAULT_POLL_INTERVAL: Final = 30
 
 # -----------------------------------------------------------------------

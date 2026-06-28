@@ -9,15 +9,16 @@ Test fixtures and helpers for the Eufy Custom Integration.
      pytest tests/ -v
 
  Run tests against a real Eufy account (integration tests):
-     export EUFY_HOST="192.168.1.1"
      export EUFY_USERNAME="your@email.com"
      export EUFY_PASSWORD="your_password"
-     export EUFY_PORT="5222"
-     pytest tests/ -v
+     pytest tests/ -v --run-real
 
  When env vars are set, conftest.py will create a real coordinator
- that connects to your Eufy hub. Otherwise, all fixtures return Mock
- objects with the sample device data defined in MOCK_DEVICE_DATA.
+ that connects to the Eufy cloud API. Otherwise, all fixtures return
+ Mock objects with the sample device data defined in MOCK_DEVICE_DATA.
+
+ Note: Eufy uses cloud authentication — only email + password needed,
+ no hub IP or port required.
 
 ================================================================================
  FIXTURES
@@ -33,21 +34,20 @@ Test fixtures and helpers for the Eufy Custom Integration.
 
  mock_hass            -- MagicMock representing a HomeAssistant instance.
 
- eufy_host            -- The Eufy hub host (from env or default "192.168.1.1").
- eufy_username        -- The Eufy account username (from env or "test_user").
+ eufy_username        -- The Eufy account email (from env or "test_user").
  eufy_password        -- The Eufy account password (from env or "test_password").
 
 ================================================================================
  REAL DEVICE TESTING
 ================================================================================
 
- To run integration tests against your actual Eufy hardware:
+ To run integration tests against your actual Eufy account:
 
  1. Set the environment variables listed above.
  2. Run:  pytest tests/ -v --run-real
 
  This will skip tests that require mocked coordinators and instead
- execute tests that connect to your real Eufy hub.
+ execute tests that connect to the real Eufy cloud API.
 """
 
 from __future__ import annotations
@@ -65,28 +65,28 @@ from custom_components.eufy_custom_integration.const import DOMAIN
 
 # -----------------------------------------------------------------------
 # CREDENTIALS (from environment variables)
+# Eufy uses cloud authentication — only email + password needed.
+# No hub IP or port required.
 # -----------------------------------------------------------------------
 
-EUFY_HOST: str | None = os.environ.get("EUFY_HOST")
 EUFY_USERNAME: str | None = os.environ.get("EUFY_USERNAME")
 EUFY_PASSWORD: str | None = os.environ.get("EUFY_PASSWORD")
-EUFY_PORT: int = int(os.environ.get("EUFY_PORT", "5222"))
 
 # True if the user has provided real Eufy credentials via env vars.
-HAVE_REAL_CREDENTIALS: bool = bool(EUFY_HOST and EUFY_USERNAME and EUFY_PASSWORD)
+HAVE_REAL_CREDENTIALS: bool = bool(EUFY_USERNAME and EUFY_PASSWORD)
 
 
 def pytest_addoption(parser: pytest.Parser) -> None:
     """Add custom pytest CLI options.
 
-    --run-real:  Run tests that connect to a real Eufy hub.
-                 Requires EUFY_HOST / EUFY_USERNAME / EUFY_PASSWORD env vars.
+    --run-real:  Run tests that connect to a real Eufy account.
+                 Requires EUFY_USERNAME / EUFY_PASSWORD env vars.
     """
     parser.addoption(
         "--run-real",
         action="store_true",
         default=False,
-        help="Run integration tests against a real Eufy hub",
+        help="Run integration tests against a real Eufy account",
     )
 
 
@@ -96,11 +96,12 @@ def pytest_collection_modifyitems(
     """Skip real-device tests unless --run-real is passed.
 
     Tests marked with @pytest.mark.real_device will be skipped unless
-    the --run-real flag is provided AND the required env vars are set.
+    the --run-real flag is provided AND EUFY_USERNAME/EUFY_PASSWORD
+    env vars are set.
     """
     if not config.getoption("--run-real") or not HAVE_REAL_CREDENTIALS:
         skip_real = pytest.mark.skip(
-            reason="Requires --run-real flag and EUFY_HOST/EUFY_USERNAME/"
+            reason="Requires --run-real flag and EUFY_USERNAME/"
             "EUFY_PASSWORD env vars"
         )
         for item in items:
@@ -108,7 +109,7 @@ def pytest_collection_modifyitems(
                 item.add_marker(skip_real)
     elif not HAVE_REAL_CREDENTIALS:
         skip_real = pytest.mark.skip(
-            reason="Missing EUFY_HOST/EUFY_USERNAME/EUFY_PASSWORD env vars"
+            reason="Missing EUFY_USERNAME/EUFY_PASSWORD env vars"
         )
         for item in items:
             if "real_device" in item.keywords:
@@ -201,18 +202,8 @@ MOCK_DEVICE_DATA: dict[str, Any] = {
 # -----------------------------------------------------------------------
 
 @pytest.fixture
-def eufy_host() -> str:
-    """Return the Eufy hub hostname from env, or a mock default.
-
-    Returns:
-        The value of EUFY_HOST env var, or "192.168.1.1" if not set.
-    """
-    return EUFY_HOST or "192.168.1.1"
-
-
-@pytest.fixture
 def eufy_username() -> str:
-    """Return the Eufy account username from env, or a mock default.
+    """Return the Eufy account email from env, or a mock default.
 
     Returns:
         The value of EUFY_USERNAME env var, or "test_user" if not set.
@@ -269,10 +260,10 @@ def mock_coordinator(mock_device_data: dict[str, Any]) -> MagicMock:
 
 @pytest.fixture
 def mock_config_entry() -> MagicMock:
-    """Create a mock HA ConfigEntry with test connection data.
+    """Create a mock HA ConfigEntry with test credentials.
 
-    Contains realistic host/port/username/password values.
-    entry.options is empty by default (no user-configured options).
+    Contains realistic username/password values for a Eufy cloud
+    account. No host or port needed — Eufy uses cloud authentication.
 
     Returns:
         A configured MagicMock.
@@ -280,8 +271,6 @@ def mock_config_entry() -> MagicMock:
     entry = MagicMock()
     entry.entry_id = "test_entry_id"
     entry.data = {
-        "host":     "192.168.1.1",
-        "port":     5222,
         "username": "test_user",
         "password": "test_password",
     }
@@ -314,14 +303,14 @@ def mock_hass() -> MagicMock:
 def real_coordinator(
     mock_hass: MagicMock, mock_config_entry: MagicMock
 ) -> Any:
-    """Create a real EufyDataUpdateCoordinator connected to actual hardware.
+    """Create a real EufyDataUpdateCoordinator connected to Eufy cloud.
 
-    Requires EUFY_HOST / EUFY_USERNAME / EUFY_PASSWORD env vars and
+    Requires EUFY_USERNAME / EUFY_PASSWORD env vars and
     --run-real CLI flag. Falls back to mock_coordinator otherwise.
 
     Usage:
         @pytest.mark.real_device
-        def test_with_real_hardware(real_coordinator):
+        def test_with_real_account(real_coordinator):
             data = await real_coordinator._fetch_devices()
             assert len(data) > 0
 

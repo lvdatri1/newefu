@@ -58,7 +58,7 @@ from datetime import timedelta
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_PORT, CONF_USERNAME
+from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
@@ -90,16 +90,18 @@ class EufyDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
         """Initialise the coordinator from a config entry.
 
-        Reads host, port, username, password from the entry and sets up
-        the polling interval.
+        Reads Eufy cloud account credentials (username + password)
+        from the entry and sets up the polling interval.
+
+        No host or port is needed — Eufy uses cloud authentication.
+        The eufy-security-client library handles the connection to
+        Eufy's servers automatically.
 
         Args:
             hass: HomeAssistant instance.
             entry: The ConfigEntry created by the user during setup.
         """
         self.entry = entry
-        self._host = entry.data[CONF_HOST]
-        self._port = entry.data.get(CONF_PORT, 5222)
         self._username = entry.data[CONF_USERNAME]
         self._password = entry.data[CONF_PASSWORD]
 
