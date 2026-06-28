@@ -66,6 +66,7 @@ from homeassistant.helpers.update_coordinator import (
 )
 
 from .const import (
+    CONF_COUNTRY,
     CONF_POLL_INTERVAL,
     DEFAULT_POLL_INTERVAL,
     DOMAIN,
@@ -90,12 +91,11 @@ class EufyDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
         """Initialise the coordinator from a config entry.
 
-        Reads Eufy cloud account credentials (username + password)
-        from the entry and sets up the polling interval.
+        Reads Eufy cloud account credentials (username, password,
+        country code) from the entry and sets up the polling interval.
 
-        No host or port is needed — Eufy uses cloud authentication.
-        The eufy-security-client library handles the connection to
-        Eufy's servers automatically.
+        The country code determines which regional API server Eufy
+        routes requests to (e.g. "US", "GB", "DE").
 
         Args:
             hass: HomeAssistant instance.
@@ -104,6 +104,7 @@ class EufyDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self.entry = entry
         self._username = entry.data[CONF_USERNAME]
         self._password = entry.data[CONF_PASSWORD]
+        self._country: str = entry.data.get(CONF_COUNTRY, "US")
 
         poll_interval = entry.options.get(
             CONF_POLL_INTERVAL, DEFAULT_POLL_INTERVAL

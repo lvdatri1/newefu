@@ -4,10 +4,11 @@
       "step": {
         "user": {
           "title": "Connect to Eufy Cloud",
-          "description": "Enter your Eufy account credentials (cloud-based, no hub IP needed)",
+          "description": "Enter your Eufy account credentials. The country code selects the regional API server for your account.",
           "data": {
             "username": "Email",
             "password": "Password",
+            "country": "Country Code",
             "poll_interval": "Poll Interval (seconds)"
           }
         }

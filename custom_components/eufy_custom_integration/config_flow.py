@@ -7,18 +7,19 @@ Config flow for the Eufy Custom Integration.
 
  The config flow handles the UI-based setup wizard that users follow when
  adding "Eufy Custom Integration" via Settings -> Devices & Services.
- It collects Eufy account credentials (username + password) and creates
- a ConfigEntry that persists these settings.
+ It collects Eufy account credentials (username, password, country code)
+ and creates a ConfigEntry that persists these settings.
 
- Eufy uses cloud-based authentication — only an email and password are
- required (no local hub IP or port needed).
+ Eufy uses cloud-based authentication — email, password, and a country
+ code are needed to determine the correct regional API server.
+ No local hub IP or port is required.
 
 ================================================================================
  STEPS
 ================================================================================
 
- 1. user:        The initial form. Collects username, password, and
-                 poll interval. On submit, creates the config entry.
+ 1. user:        The initial form. Collects username, password, country
+                 code, and poll interval. On submit, creates the config entry.
 
  FUTURE STEPS (to implement):
    - async_step_reauth:    Handle credential expiry / 2FA challenge.
@@ -43,12 +44,36 @@ import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.data_entry_flow import FlowResult
+from homeassistant.helpers import selector
 
 from .const import (
+    CONF_COUNTRY,
     CONF_POLL_INTERVAL,
     DEFAULT_POLL_INTERVAL,
     DOMAIN,
 )
+
+# Common Eufy country codes for the dropdown selector.
+# These map to Eufy's regional API servers.
+COUNTRY_OPTIONS = [
+    selector.SelectOptionDict(value="US", label="United States"),
+    selector.SelectOptionDict(value="GB", label="United Kingdom"),
+    selector.SelectOptionDict(value="DE", label="Germany"),
+    selector.SelectOptionDict(value="FR", label="France"),
+    selector.SelectOptionDict(value="NL", label="Netherlands"),
+    selector.SelectOptionDict(value="AU", label="Australia"),
+    selector.SelectOptionDict(value="CA", label="Canada"),
+    selector.SelectOptionDict(value="IT", label="Italy"),
+    selector.SelectOptionDict(value="ES", label="Spain"),
+    selector.SelectOptionDict(value="BE", label="Belgium"),
+    selector.SelectOptionDict(value="CH", label="Switzerland"),
+    selector.SelectOptionDict(value="AT", label="Austria"),
+    selector.SelectOptionDict(value="SE", label="Sweden"),
+    selector.SelectOptionDict(value="NO", label="Norway"),
+    selector.SelectOptionDict(value="DK", label="Denmark"),
+    selector.SelectOptionDict(value="JP", label="Japan"),
+    selector.SelectOptionDict(value="CN", label="China"),
+]
 
 
 class EufyConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -74,11 +99,13 @@ class EufyConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         If user_input is provided, create the config entry.
 
         The form collects:
-          - username (required):      Eufy account email
-          - password (required):      Eufy account password
-          - poll_interval (optional, default 30s):  How often to poll the API
+          - username (required):           Eufy account email
+          - password (required):           Eufy account password
+          - country (required):            2-letter ISO country code
+          - poll_interval (optional, 30s): How often to poll the API
 
-        Note: No host/port is needed — Eufy uses cloud authentication.
+        The country code is needed by Eufy's API to route requests
+        to the correct regional server for your account.
 
         Args:
             user_input: Dict of user-provided values, or None to show form.
@@ -98,6 +125,12 @@ class EufyConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             {
                 vol.Required(CONF_USERNAME): str,
                 vol.Required(CONF_PASSWORD): str,
+                vol.Required(CONF_COUNTRY): selector.SelectSelector(
+                    selector.SelectSelectorConfig(
+                        options=COUNTRY_OPTIONS,
+                        mode=selector.SelectSelectorMode.DROPDOWN,
+                    )
+                ),
                 vol.Optional(
                     CONF_POLL_INTERVAL, default=DEFAULT_POLL_INTERVAL
                 ): vol.All(vol.Coerce(int), vol.Range(min=10, max=300)),

@@ -51,6 +51,7 @@ MANUFACTURER: Final = "Eufy"
 # -----------------------------------------------------------------------
 CONF_USERNAME: Final = "username"
 CONF_PASSWORD: Final = "password"
+CONF_COUNTRY: Final = "country"
 CONF_DEVICE_TYPE: Final = "device_type"
 CONF_POLL_INTERVAL: Final = "poll_interval"
 

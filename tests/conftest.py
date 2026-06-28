@@ -71,9 +71,10 @@ from custom_components.eufy_custom_integration.const import DOMAIN
 
 EUFY_USERNAME: str | None = os.environ.get("EUFY_USERNAME")
 EUFY_PASSWORD: str | None = os.environ.get("EUFY_PASSWORD")
+EUFY_COUNTRY: str | None = os.environ.get("EUFY_COUNTRY")
 
 # True if the user has provided real Eufy credentials via env vars.
-HAVE_REAL_CREDENTIALS: bool = bool(EUFY_USERNAME and EUFY_PASSWORD)
+HAVE_REAL_CREDENTIALS: bool = bool(EUFY_USERNAME and EUFY_PASSWORD and EUFY_COUNTRY)
 
 
 def pytest_addoption(parser: pytest.Parser) -> None:
@@ -96,20 +97,20 @@ def pytest_collection_modifyitems(
     """Skip real-device tests unless --run-real is passed.
 
     Tests marked with @pytest.mark.real_device will be skipped unless
-    the --run-real flag is provided AND EUFY_USERNAME/EUFY_PASSWORD
-    env vars are set.
+    the --run-real flag is provided AND EUFY_USERNAME/EUFY_PASSWORD/
+    EUFY_COUNTRY env vars are set.
     """
     if not config.getoption("--run-real") or not HAVE_REAL_CREDENTIALS:
         skip_real = pytest.mark.skip(
             reason="Requires --run-real flag and EUFY_USERNAME/"
-            "EUFY_PASSWORD env vars"
+            "EUFY_PASSWORD/EUFY_COUNTRY env vars"
         )
         for item in items:
             if "real_device" in item.keywords:
                 item.add_marker(skip_real)
     elif not HAVE_REAL_CREDENTIALS:
         skip_real = pytest.mark.skip(
-            reason="Missing EUFY_USERNAME/EUFY_PASSWORD env vars"
+            reason="Missing EUFY_USERNAME/EUFY_PASSWORD/EUFY_COUNTRY env vars"
         )
         for item in items:
             if "real_device" in item.keywords:
@@ -222,6 +223,16 @@ def eufy_password() -> str:
 
 
 @pytest.fixture
+def eufy_country() -> str:
+    """Return the Eufy account country code from env, or a mock default.
+
+    Returns:
+        The value of EUFY_COUNTRY env var, or "US" if not set.
+    """
+    return EUFY_COUNTRY or "US"
+
+
+@pytest.fixture
 def mock_device_data() -> dict[str, Any]:
     """Return the standard mock device data dict.
 
@@ -273,6 +284,7 @@ def mock_config_entry() -> MagicMock:
     entry.data = {
         "username": "test_user",
         "password": "test_password",
+        "country": "US",
     }
     entry.options = {}
     return entry
