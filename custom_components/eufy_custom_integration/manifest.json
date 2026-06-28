@@ -6,9 +6,9 @@
   "dependencies": [],
   "documentation": "https://github.com/user/eufy_custom_integration",
   "integration_type": "hub",
-  "iot_class": "local_push",
+  "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/user/eufy_custom_integration/issues",
-  "requirements": ["eufy-security-client>=3.0.0"],
+  "requirements": ["pyeufysecurity>=0.4.4"],
   "version": "1.0.0",
-  "homeassistant": "2024.1.0"
+  "homeassistant": "2025.1.0"
 }

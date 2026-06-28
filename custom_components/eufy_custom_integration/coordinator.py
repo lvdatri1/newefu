@@ -57,6 +57,8 @@ from __future__ import annotations
 from datetime import timedelta
 from typing import Any
 
+import aiohttp
+
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
@@ -142,10 +144,12 @@ class EufyDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         return data
 
     async def _fetch_devices(self) -> dict[str, Any]:
-        """Fetch all device data from the Eufy API.
+        """Fetch all device data from the Eufy API using pyeufysecurity.
 
-        CURRENTLY USES MOCK DATA. Replace this method with a real API
-        call to eufy-security-client when connecting to a real Eufy hub.
+        Attempts a real cloud API call first via the pyeufysecurity
+        library (for cameras/doorbells) and raw v2 API calls for
+        stations and other device types. Falls back to mock data when
+        credentials are missing or the API is unreachable.
 
         Expected return format for each device:
             device_id (str) -> {
@@ -162,11 +166,215 @@ class EufyDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         """
         devices: dict[str, Any] = {}
 
-        # --- Camera -------------------------------------------------------
+        try:
+            from eufy_security import async_login
+
+            if not hasattr(self, "_api_session") or self._api_session.closed:
+                self._api_session = aiohttp.ClientSession()
+                self._api = await async_login(
+                    self._username,
+                    self._password,
+                    self._api_session,
+                    self._country,
+                )
+            else:
+                await self._api.async_update_device_info()
+
+            # 1. Process cameras and doorbells from the library
+            for sn, cam in self._api.cameras.items():
+                dev = cam.device_info or {}
+                params = dev.get("params", {}) or {}
+                properties = {}
+                device_type = self._infer_device_type(cam)
+
+                stream_url = None
+                try:
+                    stream_url = await cam.async_get_stream_url()
+                except Exception:
+                    pass
+
+                if device_type == "doorbell":
+                    properties.update(
+                        night_vision=params.get("night_vision", False),
+                        two_way_audio=params.get("two_way_audio", True),
+                        resolution="1920x1080",
+                        ringing=params.get("ringing", False),
+                        motion_detection=params.get("motion_detection", True),
+                        motion_detected=params.get("motion_detected", False),
+                    )
+                else:
+                    properties.update(
+                        night_vision=params.get("night_vision", False),
+                        two_way_audio=params.get("two_way_audio", True),
+                        resolution=params.get("resolution", "2560x1920"),
+                        motion_detection=params.get("motion_detection", False),
+                        motion_detected=params.get("motion_detected", False),
+                    )
+
+                devices[sn] = {
+                    "device_id":    sn,
+                    "device_name":  cam.name or dev.get("device_name", sn),
+                    "device_model": cam.model or dev.get("device_model", ""),
+                    "serial_number": sn,
+                    "battery_level": params.get("battery"),
+                    "wifi_signal":   params.get("wifi_signal"),
+                    "is_online":     dev.get("is_online", True),
+                    "state":         dev.get("state", "idle"),
+                    "stream_url":    stream_url,
+                    "last_event":    None,
+                    "type":          device_type,
+                    "properties":    properties,
+                }
+
+            # 2. Fetch raw device list for non-camera devices (locks, sensors, etc.)
+            try:
+                resp = await self._api.request("post", "v2/app/get_devs_list")
+                raw_data = resp.get("data")
+                if raw_data and isinstance(raw_data, str):
+                    all_devices = self._api._decrypt_response_data(raw_data)
+                elif raw_data and isinstance(raw_data, list):
+                    all_devices = raw_data
+                else:
+                    all_devices = []
+
+                for dev in all_devices:
+                    sn = dev.get("device_sn", "")
+                    if not sn or sn in devices:
+                        continue
+                    dev_type = self._map_api_device_type(dev)
+                    params = dev.get("params", {}) or {}
+                    dev_info = self._build_api_device_entry(dev, dev_type, params)
+                    if dev_info:
+                        devices[sn] = dev_info
+
+            except Exception as exc:
+                LOGGER.debug("Could not fetch extended device list: %s", exc)
+
+            # 3. Fetch hub/station list for alarm systems
+            try:
+                hubs_resp = await self._api.request("post", "v2/app/get_hub_list")
+                raw_hub = hubs_resp.get("data")
+                if raw_hub and isinstance(raw_hub, str):
+                    hubs_data = self._api._decrypt_response_data(raw_hub)
+                elif raw_hub and isinstance(raw_hub, list):
+                    hubs_data = raw_hub
+                else:
+                    hubs_data = []
+
+                for hub in hubs_data:
+                    sn = hub.get("station_sn", "")
+                    if not sn or sn in devices:
+                        continue
+                    params = hub.get("params", {}) or {}
+                    guard_mode = params.get("guard_mode", params.get("mode", "disarmed"))
+                    properties = {
+                        "armed":            guard_mode != "disarmed",
+                        "mode":             guard_mode,
+                        "schedule_enabled": params.get("schedule_enabled", False),
+                    }
+                    devices[sn] = {
+                        "device_id":    sn,
+                        "device_name":  hub.get("device_name", hub.get("station_name", sn)),
+                        "device_model": hub.get("device_model", "HomeBase"),
+                        "serial_number": sn,
+                        "is_online":     True,
+                        "state":         guard_mode,
+                        "last_event":    None,
+                        "type":          "ground_base",
+                        "properties":    properties,
+                    }
+
+            except Exception as exc:
+                LOGGER.debug("Could not fetch hub list: %s", exc)
+
+        except Exception as err:
+            LOGGER.warning(
+                "Eufy API call failed, falling back to mock data: %s", err
+            )
+            devices = self._mock_devices()
+
+        return devices
+
+    def _infer_device_type(self, cam) -> str:
+        """Determine whether a Camera object is a doorbell or standard camera."""
+        if not cam:
+            return "camera"
+        model = (cam.model or "").lower()
+        name = (cam.name or "").lower()
+        info = cam.device_info or {}
+        dev_name = (info.get("device_name", "") or "").lower()
+        dev_model = (info.get("device_model", "") or "").lower()
+        combined = f"{model} {name} {dev_name} {dev_model}"
+        if any(kw in combined for kw in ("doorbell", "door bell", "t8200", "t8210", "t8220", "2k")):
+            return "doorbell"
+        return "camera"
+
+    def _map_api_device_type(self, dev: dict) -> str | None:
+        """Map raw API device type string to internal type."""
+        raw = (dev.get("type", "") or "").strip().lower()
+        if not raw:
+            model = (dev.get("device_model", "") or "").lower()
+            if any(kw in model for kw in ("lock", "smart lock")):
+                return "smart_lock"
+            if any(kw in model for kw in ("sensor", "motion", "contact")):
+                return "sensor"
+            return None
+        if raw in ("lock", "smartlock", "smart_lock"):
+            return "smart_lock"
+        if raw in ("sensor", "motion", "contact"):
+            return "sensor"
+        return None
+
+    def _build_api_device_entry(
+        self, dev: dict, dev_type: str | None, params: dict
+    ) -> dict[str, Any] | None:
+        """Convert a raw API device dict into the coordinator data schema."""
+        if dev_type is None:
+            return None
+        sn = dev.get("device_sn", "")
+        entry: dict[str, Any] = {
+            "device_id":     sn,
+            "device_name":   dev.get("device_name", dev.get("device_alias", sn)),
+            "device_model":  dev.get("device_model", ""),
+            "serial_number": sn,
+            "battery_level": params.get("battery"),
+            "wifi_signal":   params.get("wifi_signal"),
+            "is_online":     dev.get("is_online", True),
+            "state":         "unknown",
+            "stream_url":    None,
+            "last_event":    None,
+            "type":          dev_type,
+            "properties":    {},
+        }
+
+        if dev_type == "smart_lock":
+            lock_state = params.get("lock_state", "locked")
+            entry["state"] = lock_state
+            entry["properties"] = {
+                "locked":   lock_state == "locked",
+                "locking":  lock_state == "locking",
+                "unlocking": lock_state == "unlocking",
+                "jammed":   lock_state == "jammed",
+            }
+        elif dev_type == "sensor":
+            sensor_type = dev.get("device_model", "unknown_sensor")
+            entry["state"] = params.get("sensor_state", "clear")
+            entry["properties"] = {
+                "sensor_type":      sensor_type,
+                "battery_level":    params.get("battery"),
+                "triggered":        params.get("sensor_state", "clear") == "triggered",
+            }
+
+        return entry
+
+    def _mock_devices(self) -> dict[str, Any]:
+        """Return mock device data when the real API is unavailable."""
+        devices: dict[str, Any] = {}
+
         devices["camera_1"] = {
-            "device_id":    "camera_1",
-            "device_name":  "Front Door Camera",
-            "device_model": "T8111",
+            "device_id":     "camera_1",
+            "device_name":   "Front Door Camera",
+            "device_model":  "T8111",
             "serial_number": "SN123456789",
             "battery_level": 85,
             "wifi_signal":   -45,
@@ -184,11 +392,10 @@ class EufyDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             },
         }
 
-        # --- Doorbell -----------------------------------------------------
         devices["doorbell_1"] = {
-            "device_id":    "doorbell_1",
-            "device_name":  "Front Doorbell",
-            "device_model": "T8200",
+            "device_id":     "doorbell_1",
+            "device_name":   "Front Doorbell",
+            "device_model":  "T8200",
             "serial_number": "SN987654321",
             "battery_level": 72,
             "wifi_signal":   -50,
@@ -207,11 +414,10 @@ class EufyDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             },
         }
 
-        # --- Ground Base (HomeBase) ---------------------------------------
         devices["ground_base_1"] = {
-            "device_id":    "ground_base_1",
-            "device_name":  "HomeBase",
-            "device_model": "T8000",
+            "device_id":     "ground_base_1",
+            "device_name":   "HomeBase",
+            "device_model":  "T8000",
             "serial_number": "SN456789123",
             "is_online":     True,
             "state":         "disarmed",
@@ -285,3 +491,8 @@ class EufyDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         data[device_id]["state"] = "disarmed"
         self.async_set_updated_data(data)
         return True
+
+    async def async_unload(self) -> None:
+        """Clean up the aiohttp session when the coordinator is shut down."""
+        if hasattr(self, "_api_session") and not self._api_session.closed:
+            await self._api_session.close()

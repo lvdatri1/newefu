@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install test dependencies
+        run: pip install --upgrade pip setuptools wheel
+
+      - name: Install Home Assistant and integration deps
+        run: |
+          pip install homeassistant==2025.1.4
+          pip install pyeufysecurity==0.4.4
+          pip install pytest pytest-asyncio pytest-homeassistant-custom-component pytest-timeout
+
+      - name: Run unit and simulation tests
+        run: pytest tests/ -v --timeout=30
+
+      - name: Run real API integration tests (if credentials available)
+        if: ${{ secrets.EUFY_USERNAME != '' && secrets.EUFY_PASSWORD != '' }}
+        env:
+          EUFY_USERNAME: ${{ secrets.EUFY_USERNAME }}
+          EUFY_PASSWORD: ${{ secrets.EUFY_PASSWORD }}
+          EUFY_COUNTRY: ${{ secrets.EUFY_COUNTRY || 'US' }}
+        run: pytest tests/ -v --run-real --timeout=60
