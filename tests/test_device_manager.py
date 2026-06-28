@@ -18,10 +18,10 @@ from unittest.mock import MagicMock, patch
 
 from homeassistant.helpers import device_registry as dr
 
-from custom_components.eufy_custom_integration.device_manager import (
+from custom_components.lvdatri_eufy.device_manager import (
     EufyDeviceManager,
 )
-from custom_components.eufy_custom_integration.const import DOMAIN
+from custom_components.lvdatri_eufy.const import DOMAIN
 
 
 async def test_device_manager_initialization(

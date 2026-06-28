@@ -1,5 +1,5 @@
 {
-  "name": "Eufy Custom Integration",
+  "name": "Eufy (lvdatri)",
   "render_readme": true,
   "homeassistant": "2024.1.0",
   "country": ["US", "GB", "DE", "FR", "NL", "AU"],

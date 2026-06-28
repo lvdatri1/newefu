@@ -17,7 +17,7 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock
 
-from custom_components.eufy_custom_integration.lock import EufyLock
+from custom_components.lvdatri_eufy.lock import EufyLock
 
 
 async def test_lock_initialization(mock_coordinator: MagicMock) -> None:

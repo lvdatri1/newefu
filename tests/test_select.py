@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock
 
-from custom_components.eufy_custom_integration.select import (
+from custom_components.lvdatri_eufy.select import (
     AVAILABLE_MODES,
     EufyModeSelect,
 )

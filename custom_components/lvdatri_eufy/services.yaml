@@ -8,7 +8,7 @@ set_mode:
       required: true
       selector:
         entity:
-          integration: eufy_custom_integration
+          integration: lvdatri_eufy
           domain: select
     mode:
       name: Mode
@@ -33,7 +33,7 @@ start_stream:
       required: true
       selector:
         entity:
-          integration: eufy_custom_integration
+          integration: lvdatri_eufy
           domain: camera
 
 stop_stream:
@@ -46,7 +46,7 @@ stop_stream:
       required: true
       selector:
         entity:
-          integration: eufy_custom_integration
+          integration: lvdatri_eufy
           domain: camera
 
 trigger_alarm:
@@ -59,7 +59,7 @@ trigger_alarm:
       required: true
       selector:
         entity:
-          integration: eufy_custom_integration
+          integration: lvdatri_eufy
           domain: alarm_control_panel
 
 disarm_alarm:
@@ -72,5 +72,5 @@ disarm_alarm:
       required: true
       selector:
         entity:
-          integration: eufy_custom_integration
+          integration: lvdatri_eufy
           domain: alarm_control_panel

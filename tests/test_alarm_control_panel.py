@@ -34,7 +34,7 @@ from homeassistant.const import (
     STATE_ALARM_TRIGGERED,
 )
 
-from custom_components.eufy_custom_integration.alarm_control_panel import (
+from custom_components.lvdatri_eufy.alarm_control_panel import (
     EufyAlarmControlPanel,
 )
 

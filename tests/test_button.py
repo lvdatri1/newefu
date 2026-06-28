@@ -13,7 +13,7 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock
 
-from custom_components.eufy_custom_integration.button import EufyWakeUpButton
+from custom_components.lvdatri_eufy.button import EufyWakeUpButton
 
 
 async def test_button_initialization(mock_coordinator: MagicMock) -> None:

@@ -87,7 +87,7 @@ Home Assistant custom integration for Eufy security devices — cameras, doorbel
 3. Restart Home Assistant
 
 ### Manual
-1. Copy `custom_components/eufy_custom_integration/` to your Home Assistant `custom_components/` directory
+1. Copy `custom_components/lvdatri_eufy/` to your Home Assistant `custom_components/` directory
 2. Restart Home Assistant
 3. Add the integration via Settings → Devices & Services → Add Integration → "Eufy Custom Integration"
 4. Enter your Eufy email, password, and country code
@@ -141,7 +141,7 @@ pytest tests/test_camera.py -v
 pytest tests/test_camera.py::test_camera_initialization -v
 
 # Run with coverage report
-pytest tests/ --cov=custom_components.eufy_custom_integration -v
+pytest tests/ --cov=custom_components.lvdatri_eufy -v
 ```
 
 ### Integration Tests (Real Device)
@@ -204,8 +204,8 @@ tests/
 
 ```bash
 # Clone the repository
-git clone https://github.com/user/eufy_custom_integration.git
-cd eufy_custom_integration
+git clone https://github.com/lvdatri1/newefu.git
+cd lvdatri_eufy
 
 # (Optional) Create a virtual environment
 python3 -m venv .venv

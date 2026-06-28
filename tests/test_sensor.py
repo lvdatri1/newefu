@@ -20,7 +20,7 @@ from unittest.mock import MagicMock
 from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.const import PERCENTAGE, SIGNAL_STRENGTH_DECIBELS_MILLIWATT
 
-from custom_components.eufy_custom_integration.sensor import (
+from custom_components.lvdatri_eufy.sensor import (
     EufyBatterySensor,
     EufyWiFiSignalSensor,
 )

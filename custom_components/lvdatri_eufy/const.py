@@ -42,7 +42,7 @@ LOGGER = logging.getLogger(__package__)
 # -----------------------------------------------------------------------
 # DOMAIN & MANUFACTURER
 # -----------------------------------------------------------------------
-DOMAIN: Final = "eufy_custom_integration"
+DOMAIN: Final = "lvdatri_eufy"
 MANUFACTURER: Final = "Eufy"
 
 # -----------------------------------------------------------------------

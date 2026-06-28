@@ -21,13 +21,13 @@ from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from homeassistant.loader import DATA_INTEGRATIONS
 
-from custom_components.eufy_custom_integration import async_setup_entry, async_unload_entry
-from custom_components.eufy_custom_integration.const import (
+from custom_components.lvdatri_eufy import async_setup_entry, async_unload_entry
+from custom_components.lvdatri_eufy.const import (
     CONF_COUNTRY,
     CONF_POLL_INTERVAL,
     DOMAIN,
 )
-from custom_components.eufy_custom_integration.coordinator import (
+from custom_components.lvdatri_eufy.coordinator import (
     EufyDataUpdateCoordinator,
 )
 

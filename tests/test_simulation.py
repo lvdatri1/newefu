@@ -11,22 +11,22 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from custom_components.eufy_custom_integration.alarm_control_panel import (
+from custom_components.lvdatri_eufy.alarm_control_panel import (
     EufyAlarmControlPanel,
 )
-from custom_components.eufy_custom_integration.binary_sensor import (
+from custom_components.lvdatri_eufy.binary_sensor import (
     EufyDoorbellPressSensor,
     EufyMotionSensor,
     EufyOnlineSensor,
 )
-from custom_components.eufy_custom_integration.camera import EufyCamera
-from custom_components.eufy_custom_integration.lock import EufyLock
-from custom_components.eufy_custom_integration.select import EufyModeSelect
-from custom_components.eufy_custom_integration.sensor import (
+from custom_components.lvdatri_eufy.camera import EufyCamera
+from custom_components.lvdatri_eufy.lock import EufyLock
+from custom_components.lvdatri_eufy.select import EufyModeSelect
+from custom_components.lvdatri_eufy.sensor import (
     EufyBatterySensor,
     EufyWiFiSignalSensor,
 )
-from custom_components.eufy_custom_integration.switch import (
+from custom_components.lvdatri_eufy.switch import (
     EufyMotionDetectionSwitch,
 )
 

@@ -20,10 +20,10 @@ from __future__ import annotations
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from custom_components.eufy_custom_integration.coordinator import (
+from custom_components.lvdatri_eufy.coordinator import (
     EufyDataUpdateCoordinator,
 )
-from custom_components.eufy_custom_integration.const import DOMAIN
+from custom_components.lvdatri_eufy.const import DOMAIN
 
 
 async def test_coordinator_initialization(

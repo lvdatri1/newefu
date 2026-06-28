@@ -62,7 +62,7 @@ import pytest
 
 from homeassistant.core import HomeAssistant
 
-from custom_components.eufy_custom_integration.const import DOMAIN
+from custom_components.lvdatri_eufy.const import DOMAIN
 
 # -----------------------------------------------------------------------
 # CREDENTIALS (from environment variables)
@@ -332,7 +332,7 @@ def real_coordinator(
     """
     if not HAVE_REAL_CREDENTIALS:
         pytest.skip("Real credentials not set")
-    from custom_components.eufy_custom_integration.coordinator import (
+    from custom_components.lvdatri_eufy.coordinator import (
         EufyDataUpdateCoordinator,
     )
     return EufyDataUpdateCoordinator(mock_hass, mock_config_entry)

@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock
 
-from custom_components.eufy_custom_integration.switch import EufyMotionDetectionSwitch
+from custom_components.lvdatri_eufy.switch import EufyMotionDetectionSwitch
 
 
 async def test_switch_initialization(mock_coordinator: MagicMock) -> None:

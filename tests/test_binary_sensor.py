@@ -22,7 +22,7 @@ from unittest.mock import MagicMock
 
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 
-from custom_components.eufy_custom_integration.binary_sensor import (
+from custom_components.lvdatri_eufy.binary_sensor import (
     EufyDoorbellPressSensor,
     EufyMotionSensor,
     EufyOnlineSensor,

@@ -21,7 +21,7 @@ from unittest.mock import MagicMock
 
 from homeassistant.components.camera import CameraEntityFeature
 
-from custom_components.eufy_custom_integration.camera import EufyCamera
+from custom_components.lvdatri_eufy.camera import EufyCamera
 
 
 async def test_camera_initialization(mock_coordinator: MagicMock) -> None:

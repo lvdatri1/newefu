@@ -17,8 +17,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 from homeassistant import config_entries, data_entry_flow
 
-from custom_components.eufy_custom_integration.config_flow import EufyConfigFlow
-from custom_components.eufy_custom_integration.const import DOMAIN
+from custom_components.lvdatri_eufy.config_flow import EufyConfigFlow
+from custom_components.lvdatri_eufy.const import DOMAIN
 
 
 async def test_config_flow_user_step(mock_hass: MagicMock) -> None:
@@ -79,12 +79,12 @@ async def test_env_var_auto_setup(mock_hass: MagicMock) -> None:
 
     mock_hass.async_create_task = fake_create_task
 
-    with patch("custom_components.eufy_custom_integration.os.environ", {
+    with patch("custom_components.lvdatri_eufy.os.environ", {
         "EUFY_USERNAME": "env@eufy.com",
         "EUFY_PASSWORD": "secret",
         "EUFY_COUNTRY": "GB",
     }):
-        from custom_components.eufy_custom_integration import async_setup
+        from custom_components.lvdatri_eufy import async_setup
         result = await async_setup(mock_hass, {})
 
     assert result is True
@@ -98,12 +98,12 @@ async def test_env_var_auto_setup_skips_when_entry_exists(
     mock_hass.config_entries.async_entries.return_value = ["existing_entry"]
     mock_hass.async_create_task = MagicMock()
 
-    with patch("custom_components.eufy_custom_integration.os.environ", {
+    with patch("custom_components.lvdatri_eufy.os.environ", {
         "EUFY_USERNAME": "env@eufy.com",
         "EUFY_PASSWORD": "secret",
         "EUFY_COUNTRY": "GB",
     }):
-        from custom_components.eufy_custom_integration import async_setup
+        from custom_components.lvdatri_eufy import async_setup
         result = await async_setup(mock_hass, {})
 
     assert result is True
@@ -117,8 +117,8 @@ async def test_env_var_auto_setup_skips_when_vars_missing(
     mock_hass.config_entries.async_entries.return_value = []
     mock_hass.async_create_task = MagicMock()
 
-    with patch("custom_components.eufy_custom_integration.os.environ", {}):
-        from custom_components.eufy_custom_integration import async_setup
+    with patch("custom_components.lvdatri_eufy.os.environ", {}):
+        from custom_components.lvdatri_eufy import async_setup
         result = await async_setup(mock_hass, {})
 
     assert result is True
